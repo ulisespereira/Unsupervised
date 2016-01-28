@@ -67,7 +67,7 @@ thres=1.5
 #parameters stimulation
 dt=0.5
 lagStim=100.
-times=10.
+times=15.
 amp=3.
 
 
@@ -143,8 +143,27 @@ plt.show()
 #plt.show()
 
 print 'tranferfunction.pdf is stored'
-##bifurcation Diagram 
 
+#---------------------------------------------------------------
+# Qualitative  T vs  Delta diagaram
+#---------------------------------------------------------------
+
+myTv=np.linspace(0,2*delay,200)
+myDeltav=np.linspace(0,2*delay,200)
+valDelay=np.array([delay for i in range(200)])
+
+plt.plot(myDeltav,valDelay,'k')
+plt.plot(valDelay,myTv,'k')
+plt.plot(myDeltav,(-myDeltav+delay)/2.,'k')
+plt.fill_between(myDeltav[0:100],np.zeros(100),valDelay[0:100],alpha=0.5,edgecolor='k', facecolor='red')
+plt.fill_between(myDeltav[100:200],np.zeros(100),valDelay[100:200],alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.fill_between(myDeltav[0:100],delay*np.ones(100),2*valDelay[0:100],alpha=0.5,edgecolor='k', facecolor='red')
+plt.fill_between(myDeltav[100:200],delay*np.ones(100),2*valDelay[100:200],alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.fill_between(myDeltav[0:100],np.zeros(100),0.5*(delay-myDeltav[0:100]),alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.show()
+
+
+#
 
 #------------------------------------------------------
 # New bifurcation diagram
@@ -207,70 +226,38 @@ print 'bifurcationdiagram.pdf stored'
 
 
 
-
-###################################################################
-###################stimulation degradation
+#-------------------------------------------------------------
+#-------------------stimulation degradation-------------------
+#-------------------------------------------------------------
 
 u,Wdiag,Woffdiag,connectivity,W01,t=theintegrator.DDE(field,x0,W0)
 
-## fig 3 b
+## Dynamics 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi_tanh(u[:,:]),lw=2)
+plt.plot(t,u[:,:],lw=2)
 mystim.inten=.02
 plt.plot(t,[mystim.stim(x) for x in t],'k',lw=2)
-plt.ylim([0,1.1])
-plt.xlim([0,40+20*(delta+period)+70])
-plt.xticks([0,200,400,600])
+#plt.ylim([0,1.1])
+plt.xlim([0,tmax])
+#plt.xticks([0,200,400,600])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('stimulation1.pdf', bbox_inches='tight')
 plt.show()
 
 
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi_tanh(u[:,:]),lw=2)
-mystim.inten=.02
-plt.plot(t,[mystim.stim(x) for x in t],'k',lw=2)
-plt.ylim([0,1.1])
-plt.xlim([9900,10550])
-plt.xticks([9900,10100,10300,10500])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation2.pdf', bbox_inches='tight')
-plt.show()
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi_tanh(u[:,:]),lw=2)
-mystim.inten=.02
-plt.plot(t,[mystim.stim(x) for x in t],'k',lw=2)
-plt.ylim([0,1.1])
-plt.xlim([10550,11200])
-plt.xticks([10550,10750,10950,11150])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation3.pdf', bbox_inches='tight')
-plt.show()
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi_tanh(u[:,:]),lw=2)
-mystim.inten=.02
-plt.plot(t,[mystim.stim(x) for x in t],'k',lw=2)
-plt.ylim([0,1.1])
-plt.xlim([0,tmax])
-plt.xticks([0,4000,8000,12000])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulationall.pdf', bbox_inches='tight')
-plt.show()
-
-#
-#print amp*(1-np.exp(-period/tau))
-##
 ###dynamics synapses
+
+timeWTheoric=np.linspace(40,tmax-40,times+1)
+wTheoric=[0]
+wk=0.
+for l in range(int(times)):
+	wk=wk+(wmax/4.)*(1.+np.tanh(a_pre*(amp+wk)+b_pre))*(1.+np.tanh(a_post*(amp+wk)+b_post))*(1.-np.exp(-(period-delay)/tau_learning))
+	print wk
+	wTheoric.append(wk)
+print timeWTheoric, wTheoric
+plt.plot(timeWTheoric,wTheoric)
 for i in range(10):
 		plt.plot(t,connectivity[:,i,i],'c',lw=2)
 for i in range(0,9):
@@ -281,7 +268,6 @@ for i in range(9):
 		plt.plot(t,connectivity[:,i,i+1],'r',lw=2)
 for i in range(8):
 		plt.plot(t,connectivity[:,i,i+2],'b',lw=2)
-#plt.axhline(xmin=min(t),xmax=max(t),y=(wmax/4.)*(1.+np.tanh(a_post*(2.-np.exp(-period/tau))*amp+b_post))*(1+np.tanh(a_pre*amp*(1-np.exp(-period/tau))+b_pre)),linewidth=2,color='m',ls='dashed')
 plt.xlim([0,tmax])
 plt.xticks([0,4000,8000,12000])
 plt.yticks([0,.2,.4,.6,.8])
