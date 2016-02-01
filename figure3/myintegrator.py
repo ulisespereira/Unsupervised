@@ -38,12 +38,7 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print float(i)/float(n)
-			print('hola')
-			print('hola')
-			print('hola')
-			print np.diag(Wn,k=-1)[0]
-			print('hola')
+			print 'porcentace iterations complete:', float(i*100)/float(n)
 		return  np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(time)
 	
 	def DDE_Norm_additive(self,f,x0,W0):
@@ -81,13 +76,7 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print float(i)/float(n)
-			print('hola')
-			print('hola')
-			print('hola')
-			print np.diag(Wn,k=-1)[0]
-			print np.diag(Wn,k=-1)[1]
-			print('hola')
+			print 'porcentace iterations complete:', float(i*100)/float(n)
 		return  np.array(rowsum),np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(time)
 	
 	def DDE_Norm_additive_adapt(self,f,a0,x0,W0):
@@ -130,13 +119,7 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print float(i)/float(n)
-			print('hola')
-			print('hola')
-			print('hola')
-			print np.diag(Wn,k=-1)[0]
-			print np.diag(Wn,k=-1)[1]
-			print('hola')
+			print 'porcentace iterations complete:', float(i*100)/float(n)
 		return  np.array(adapt),np.array(rowsum),np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(time)
 	
 	def DDEInh(self,f,x0,W0,winh0):
@@ -170,12 +153,7 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print float(i)/float(n)
-			print('hola')
-			print('hola')
-			print('hola')
-			print np.diag(Wn,k=-1)[0]
-			print('hola')
+			print 'porcentace iterations complete:', float(i*100)/float(n)
 		return  np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(mywinh),np.array(time)
 	
 	def DDE_Norm_additive_adapt_inh(self,f,a0,x0,W0,winh0):
@@ -222,13 +200,7 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print float(i)/float(n)
-			print('hola')
-			print('hola')
-			print('hola')
-			print np.diag(Wn,k=-1)[0]
-			print np.diag(Wn,k=-1)[1]
-			print('hola')
+			print 'porcentace iterations complete:', float(i*100)/float(n)
 		return  np.array(adapt),np.array(rowsum),np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(mywinh),np.array(time)
 	
 	def DDE_Norm_Miller(self,f,a0,x0,W0,H0):
@@ -264,12 +236,6 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print float(i)/float(n)
-			print('hola')
-			print('hola')
-			print('hola')
-			print np.diag(Wn,k=-1)[0]
-			print np.diag(Wn,k=-1)[1]
-			print('hola')
+			print 'porcentace iterations complete:', float(i*100)/float(n)
 		return  np.array(adapt),np.array(dyn),np.array(myW0),Wn,np.array(myH),np.array(time)
 	
