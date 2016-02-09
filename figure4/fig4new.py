@@ -209,10 +209,10 @@ plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationH.pdf', bbox_inches='tight')
 plt.xlim([0,tmax])
-plt.xticks([0,2000,4000,8000])
+plt.xticks([0,2500,5000,7500,10000],[0,2.5,5,7.5,10])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
+plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationHzoom.pdf', bbox_inches='tight')
 plt.show()
@@ -232,8 +232,8 @@ plt.xlabel('Time (s)')
 plt.ylabel('H')
 plt.savefig('HdynamicsLearning.pdf', bbox_inches='tight')
 plt.xlim([0,tmax])
-plt.xticks([0,2000,4000,8000])
-plt.xlabel('Time (ms)')
+plt.xticks([0,2500,5000,7500,10000],[0,2.5,5,7.5,10])
+plt.xlabel('Time (s)')
 plt.ylabel('H')
 plt.savefig('HdynamicsLearningzoom.pdf', bbox_inches='tight')
 plt.show()
@@ -275,8 +275,8 @@ for dat, ax in zip(data, axes.flat):
 	    # The vmin and vmax arguments specify the color limit
 	im = ax.matshow(dat, vmin=0, vmax=1.2)
 	# Make an axis for the colorbar on the right side
-cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-fig.colorbar(im, cax=cax)
+#cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+#fig.colorbar(im, cax=cax)
 plt.savefig('matrixstimulationHFinal.pdf', bbox_inches='tight')
 plt.show()
 
@@ -314,7 +314,6 @@ mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp
 tmax=times*(lagStim+(period+delta))+4
 x0=np.zeros(n)
-#x0[0]=10.
 a0=np.zeros((npts,n))
 x0=np.array([x0 for i in range(npts)])
 #W0=[connectivity[-1,:,:] for i in range(npts)]
@@ -322,23 +321,25 @@ W0=[0.6*np.eye(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
 H0=[myH[-1,:] for i in range(npts)]
 theintegrator_test=myintegrator(delay,dt,n,tmax)
 theintegrator_test.fast=False
-
-print W0[1]
 adapt_test,u_test,connectivity_test,W0_test,H_test,t_test=theintegrator_test.DDE_Norm_Miller(field,a0,x0,W0,H0)
-#Plotting
 
 #-------------------------------------------------------------------------------------
-#------------- Sequential Dynamics ---------------------------------------------------
+#------------- Sequential Dynamics NS-------------------------------------------------
 #-------------------------------------------------------------------------------------
 
 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=2)
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t_test])
+plt.plot(t_test,elstim,'k',lw=3)
+plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
 plt.xlim([0,tmax])
-plt.xticks([0,15000,30000,45000,60000],['0','1.5','3','4.5','6'])
-plt.xlabel('Time (ms)')
+plt.xticks([0,10000,20000],['0','10','20'])
+plt.xlabel('Time (s)')
 plt.ylabel('Rate')
 plt.savefig('sequenceallH.pdf', bbox_inches='tight')
 plt.show()
@@ -346,21 +347,15 @@ plt.show()
 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t_test,H_test[:,:])
-plt.ylim([0,1.2])
-plt.xlim([0,tmax])
-plt.xticks([0,15000,30000,45000,60000],['0','1.5','3','4.5','6'])
-plt.xlabel('Time (ms)')
-plt.ylabel('H')
-plt.savefig('HdynamicsSequence.pdf', bbox_inches='tight')
-plt.show()
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=2)
-plt.ylim([0,1.1])
-plt.xlim([0,350.])
-plt.xticks([0,100,200,300])
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t_test])
+plt.plot(t_test,elstim,'k',lw=3)
+plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
+plt.xlim([50,400.])
+plt.xticks([50,225,400])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencesfirstH.pdf', bbox_inches='tight')
@@ -369,9 +364,16 @@ plt.show()
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=2)
-plt.ylim([0,1.1])
-plt.xlim([5100,5500.])
-plt.xticks([5100,5200,5300,5400,5500])
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t_test])
+plt.plot(t_test,elstim,'k',lw=3)
+plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
+tmax=times*(lagStim+(period+delta))+4
+#plt.xlim([5*(lagStim+period+delta)+4,5*(lagStim+period+delta)+4+400.])
+plt.xlim([11550,11950])
+plt.xticks([11550,11725,11950])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencessecondH.pdf', bbox_inches='tight')
@@ -380,9 +382,15 @@ plt.show()
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=2)
-plt.ylim([0,1.1])
-plt.xlim([5600,6000.])
-plt.xticks([5600,5700,5800,5900,6000])
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t_test])
+plt.plot(t_test,elstim,'k',lw=3)
+plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
+#plt.xlim([7*(lagStim+period+delta)+4,7*(lagStim+period+delta)+4+400.])
+plt.xlim([16150,16550])
+plt.xticks([16150,16325,16550])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencethirdH.pdf', bbox_inches='tight')
@@ -391,34 +399,55 @@ plt.show()
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=2)
-plt.ylim([0,1.1])
-plt.xlim([6100,6550.])
-plt.xticks([6100,6200,6300,6400,6500])
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t_test])
+plt.plot(t_test,elstim,'k',lw=3)
+plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
+plt.xlim([20800,21150])
+plt.xticks([20800,20975,21150])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequenceforthH.pdf', bbox_inches='tight')
 plt.show()
 
+#----------------------------------------------
+#---------H dynamics NS------------------------
+#----------------------------------------------
+
+colormap = plt.cm.Accent
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
+plt.plot(t_test,H_test[:,:])
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
+plt.xlim([0,tmax])
+plt.xticks([0,10000,20000],['0','10','20'])
+plt.xlabel('Time (s)')
+plt.ylabel('H')
+plt.savefig('HdynamicsSequence.pdf', bbox_inches='tight')
+plt.show()
+
 #----------------------------------------------------------------------
-#------------Synaptic Weights------------------------------------------
+#------------Synaptic Weights NS---------------------------------------
 #----------------------------------------------------------------------
 
 
 
 for i in range(10):
-		plt.plot(t_test,connectivity[:,i,i],'c',lw=3)
+		plt.plot(t_test,connectivity_test[:,i,i],'c',lw=3)
 for i in range(0,9):
-		plt.plot(t_test,connectivity[:,i+1,i],'y',lw=3)
+		plt.plot(t_test,connectivity_test[:,i+1,i],'y',lw=3)
 for i in range(8):
-		plt.plot(t_test,connectivity[:,i+2,i],'g',lw=3)
+		plt.plot(t_test,connectivity_test[:,i+2,i],'g',lw=3)
 for i in range(9):
-		plt.plot(t_test,connectivity[:,i,i+1],'r',lw=3)
+		plt.plot(t_test,connectivity_test[:,i,i+1],'r',lw=3)
 for i in range(8):
-		plt.plot(t_test,connectivity[:,i,i+2],'b',lw=3)
+		plt.plot(t_test,connectivity_test[:,i,i+2],'b',lw=3)
 
 
-plt.xlim([0,thetmax])
-plt.xticks([0,15000,30000,45000,60000],['0','1.5','3','4.5','6'])
+plt.xlim([0,tmax])
+plt.xticks([0,10000,20000],['0','10','20'])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
@@ -426,8 +455,9 @@ plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitydegradationH.pdf', bbox_inches='tight')
 plt.show()
 
-
-#connectivity matrices
+#----------------------------------------------------------------
+#---------- Conectivity Matrix NS--------------------------------
+#----------------------------------------------------------------
 
 data=[connectivity_test[0,:,:],connectivity_test[int(len(t_test)/3.),:,:],connectivity_test[int(2*len(t_test)/3.),:,:],connectivity_test[-1,:,:]]
 
