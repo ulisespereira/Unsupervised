@@ -62,21 +62,21 @@ w_i=1.
 nu=1.
 theta=0.
 uc=1.
-wmax=2.8
-thres=1.5
+wmax=2.
+thres=0.8
 #parameters stimulation
 dt=0.5
 delta=10.
 lagStim=100.
 times=39
 period=18.
-amp=3.
+amp=5.
 
 
 a_post=1.
-b_post=-.25
+b_post=-2.15
 a_pre=1.
-b_pre=-.25
+b_pre=-2.15
 tau_learning=400.
 
 a1=6.
@@ -94,7 +94,7 @@ npts=int(np.floor(delay/dt)+1)         # points delay
 tmax=times*(lagStim+n*(period+delta))+40
 #initial conditions
 x0=0.01*np.ones((npts,n))
-W0=[(0.00001)*np.ones((n,n)) for i in range(npts)]
+W0=[(0.1)*np.ones((n,n)) for i in range(npts)]
 theintegrator=myintegrator(delay,dt,n,tmax)
 theintegrator.fast=False
 
@@ -116,12 +116,12 @@ figure=plt.figure(figsize=(40,10))
 learningrule1=figure.add_subplot(131)
 current=np.linspace(-2.5,2.5,200)
 tf,=learningrule1.plot(current,phi(current,theta,uc),'b',lw=4,label=r'$\phi(u)$')
-learnmax,=learningrule1.plot(current,0.5*(1+np.tanh(a_post*current+b_post)),'g',lw=4,label=r'$f(u)=g(u)$')
+learnmax,=learningrule1.plot(current,wmax*0.5*(1+np.tanh(a_post*current+b_post)),'g',lw=4,label=r'$f(u)=g(u)$')
 #learnmax=learningrule1.plot(current,0.5*(1+np.tanh(-50.*(current-thres))),'m',lw=3,label=r'$\tau_{Pre}(u)=\tau_{Post}(u)$')
 learningrule1.axvline(x=thres, ymin=-1., ymax = 2., linewidth=4,color='m',ls='dashed')
 learningrule1.legend( (tf,learnmax),(r'$\phi(u)$',r'$f(u)=g(u)$'), loc = (0.1, 0.8) )
-learningrule1.set_ylim([0,1.2])
-learningrule1.set_yticks([0,0.4,0.8,1.2])
+#learningrule1.set_ylim([0,1.2])
+#learningrule1.set_yticks([0,0.4,0.8,1.2])
 learningrule1.set_xlim([-2.5,2.5])
 learningrule1.set_xlabel(r'$u$')
 #learningrule1.legend(loc='upper left')
