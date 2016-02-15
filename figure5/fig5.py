@@ -336,7 +336,7 @@ x0=np.zeros(n)
 a0=np.zeros((npts,n))
 x0=np.array([x0 for i in range(npts)])
 #W0=[connectivity[-1,:,:] for i in range(npts)]
-W0=[0.5*np.eye(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
+W0=[0.8*np.eye(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
 H0=[myH[-1,:] for i in range(npts)]
 theintegrator_test=myintegrator(delay,dt,n,tmax)
 theintegrator_test.fast=False
