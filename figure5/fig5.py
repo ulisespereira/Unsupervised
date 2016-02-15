@@ -69,7 +69,7 @@ nu=1.
 theta=0.
 uc=1.
 wmax=3.500
-thres=1.5
+thres=0.9
 beta=1.6
 tau_a=10.
 #parameters stimulation
@@ -79,14 +79,14 @@ times=135
 amp=7.
 
 
-delta=11
-period=17.
+delta=13.
+period=15.
 
 
 a_post=1.
-b_post=-3.
+b_post=-2.3
 a_pre=1.0
-b_pre=-3.
+b_pre=-2.3
 tau_learning=400.
 
 a1=6.
@@ -142,7 +142,7 @@ plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('stimulationH1.pdf', bbox_inches='tight')
 #plt.show()
-
+plt.close()
 print 'stimulationH1.pdf', ' is saved'
 
 colormap = plt.cm.Accent
@@ -160,6 +160,7 @@ plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('stimulationH2.pdf', bbox_inches='tight')
 #plt.show()
+plt.close()
 
 print 'stimulationH2.pdf', ' is saved'
 
@@ -178,7 +179,7 @@ plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('stimulationH3.pdf', bbox_inches='tight')
 #plt.show()
-
+plt.close()
 
 print 'stimulationH3.pdf', ' is saved'
 #----------------------------------------------------------------------
@@ -214,12 +215,13 @@ plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationH.pdf', bbox_inches='tight')
 plt.xlim([0,tmax])
 plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-plt.ylim([0,1.2])
-plt.yticks([0,0.4,0.8,1.2])
+plt.ylim([0,2.0])
+plt.yticks([0,0.5,1.,1.5,2.])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationHzoom.pdf', bbox_inches='tight')
 #plt.show()
+plt.close()
 
 print 'connectivitystimulationHzoom.pdf',' is saved'
 #------------------------------------------------------------------------
@@ -243,6 +245,7 @@ plt.xlabel('Time (s)')
 plt.ylabel('H')
 plt.savefig('HdynamicsLearningzoom.pdf', bbox_inches='tight')
 #plt.show()
+plt.close()
 
 
 print 'HdynamicsLearningzoom.pdf',' is saved'
@@ -263,6 +266,7 @@ for dat, ax in zip(data, axes.flat):
 plt.savefig('matrixstimulationH.pdf', bbox_inches='tight')
 print 'matrixstimulationH.pdf',' is saved'
 #plt.show()
+plt.close()
 
 
 #matrix connectivity and homoestatic variable during stimulation
@@ -277,6 +281,7 @@ for dat, ax in zip(data, axes.flat):
 plt.savefig('matrixstimulationHhom.pdf', bbox_inches='tight')
 print 'matrixstimulationHhom.pdf',' is saved'
 #plt.show()
+plt.close()
 
 # matrix connectivity after stimulation
 data=[connectivity[int(tmax/dt),:,:],connectivity[int(tmax/dt+((thetmax-tmax)/dt)/3.),:,:],connectivity[int(tmax/dt+2*((thetmax-tmax)/dt)/3.),:,:],connectivity[-1,:,:]]
@@ -290,6 +295,7 @@ for dat, ax in zip(data, axes.flat):
 plt.savefig('matrixstimulationHFinal.pdf', bbox_inches='tight')
 print 'matrixstimulationHFinal.pdf',' is saved'
 #plt.show()
+plt.close()
 
 # matrix connectivity and homeostatic after stimulation 
 data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [int(tmax/dt),int(tmax/dt+((thetmax-tmax)/dt)/3.),int(tmax/dt+((thetmax-tmax)/dt)*2./3.),-1] ]
@@ -303,6 +309,7 @@ fig.colorbar(im, cax=cax)
 plt.savefig('matrixstimulationHhomFinal.pdf', bbox_inches='tight')
 print 'matrixstimulationHhomFinal.pdf',' is saved'
 #plt.show()
+plt.close()
 
 
 #-------------------------------------------------------------------------
@@ -317,7 +324,7 @@ print 'matrixstimulationHhomFinal.pdf',' is saved'
 
 amp=0.5
 times=10
-delta=2000.
+delta=4000.
 period=10.
 lagStim=300
 patterns=np.identity(n)
@@ -329,7 +336,7 @@ x0=np.zeros(n)
 a0=np.zeros((npts,n))
 x0=np.array([x0 for i in range(npts)])
 #W0=[connectivity[-1,:,:] for i in range(npts)]
-W0=[0.6*np.eye(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
+W0=[0.5*np.eye(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
 H0=[myH[-1,:] for i in range(npts)]
 theintegrator_test=myintegrator(delay,dt,n,tmax)
 theintegrator_test.fast=False
@@ -356,6 +363,7 @@ plt.ylabel('Rate')
 plt.savefig('sequenceallH.pdf', bbox_inches='tight')
 print 'sequenceallH.pdf',' is saved'
 #plt.show()
+plt.close()
 
 
 colormap = plt.cm.Accent
@@ -374,6 +382,7 @@ plt.ylabel('Rate')
 plt.savefig('sequencesfirstH.pdf', bbox_inches='tight')
 print 'sequencesfirstH.pdf',' is saved'
 #plt.show()
+plt.close()
 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
@@ -393,6 +402,7 @@ plt.ylabel('Rate')
 plt.savefig('sequencessecondH.pdf', bbox_inches='tight')
 print 'sequencessecondH.pdf',' is saved'
 #plt.show()
+plt.close()
 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
@@ -411,6 +421,7 @@ plt.ylabel('Rate')
 plt.savefig('sequencethirdH.pdf', bbox_inches='tight')
 print 'sequencethirdH.pdf',' is saved'
 #plt.show()
+plt.close()
 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
@@ -428,6 +439,7 @@ plt.ylabel('Rate')
 plt.savefig('sequenceforthH.pdf', bbox_inches='tight')
 print 'sequenceforthH.pdf',' is saved'
 #plt.show()
+plt.close()
 
 #----------------------------------------------
 #---------H dynamics NS------------------------
@@ -445,6 +457,7 @@ plt.ylabel('H')
 plt.savefig('HdynamicsSequence.pdf', bbox_inches='tight')
 print 'HdynamicsSequence.pdf',' is saved'
 #plt.show()
+plt.close()
 
 #----------------------------------------------------------------------
 #------------Synaptic Weights NS---------------------------------------
@@ -471,8 +484,9 @@ plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitydegradationH.pdf', bbox_inches='tight')
-print 'connectivitydegradationH.pdf',' is saved'
+plt.close()
 #plt.show()
+print 'connectivitydegradationH.pdf',' is saved'
 
 #----------------------------------------------------------------
 #---------- Conectivity Matrix NS--------------------------------
@@ -489,6 +503,8 @@ for dat, ax in zip(data, axes.flat):
 #cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
 #fig.colorbar(im, cax=cax)
 plt.savefig('matrixsequencesH.pdf', bbox_inches='tight')
+plt.close()
+#plt.show()
 print 'matrixsequencesH.pdf',' is saved'
 #plt.show()
 
@@ -501,8 +517,9 @@ for dat, ax in zip(data, axes.flat):
 cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
 fig.colorbar(im, cax=cax)
 plt.savefig('matrixsecuencesHom.pdf', bbox_inches='tight')
-print 'matrixsecuencesHom.pdf',' is saved'
+plt.close()
 #plt.show()
+print 'matrixsecuencesHom.pdf',' is saved'
 
 
 
