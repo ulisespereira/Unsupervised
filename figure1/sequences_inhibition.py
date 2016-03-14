@@ -6,7 +6,7 @@ import math as mt
 ''' This is a simulation of a population net with shared inhibiton and three different transfer functions'''
 
 
-# this is the transfer function 
+# this is the ii transfer function 
 def phi(x,theta,uc):
 	myphi=nu*(x-theta)
 	myphi[x>uc]=nu*(uc-theta)
