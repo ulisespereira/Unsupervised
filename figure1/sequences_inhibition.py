@@ -137,10 +137,10 @@ ybrunel_true,timebrunel_true=rk4(field_true_brunel,y0_true,0.1,500)
 
 #connectivity matrix
 W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
-plt.matshow(W01)
+plt.matshow(W01,vmin=-0.2,vmax=0.6)
 plt.xlabel('Effective Connectivity (II)')
 cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-plt.colorbar(cax=cax)
+plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
 plt.savefig('connectivityInhib.pdf', bbox_inches='tight')
 plt.show()
 
@@ -155,7 +155,7 @@ for dat, ax in zip(data, axes.flat):
 	im = ax.matshow(dat, vmin=0, vmax=.8)
 	# Make an axis for the colorbar on the right side
 cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-fig.colorbar(im, cax=cax)
+fig.colorbar(im, cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
 plt.savefig('matrixsequences.pdf', bbox_inches='tight')
 plt.show()
 #transfer function

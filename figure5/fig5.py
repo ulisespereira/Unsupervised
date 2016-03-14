@@ -76,10 +76,10 @@ tau_a=10.
 dt=0.5
 lagStim=100.
 times=135
-amp=7.
+amp=5.8
 
 
-delta=13.
+delta=13.5
 period=15.
 
 
@@ -153,8 +153,8 @@ elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-plt.xlim([4550,4950])
-plt.xticks([4550,4750,4950])
+plt.xlim([4600,5000])
+plt.xticks([4600,4800,5000])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
@@ -171,8 +171,8 @@ mystim.inten=.1
 elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.xlim([45600,46000])
-plt.xticks([45600,45800,46000])
+plt.xlim([45850,46250])
+plt.xticks([45850,46050,46250])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
@@ -208,15 +208,15 @@ print wmax*(1.-np.exp(-5./tau_learning))
 #plt.axhline(xmin=min(t),xmax=max(t),y=(wmax/4.)*(1.+np.tanh(a_post*(2.-np.exp(-period/tau))*amp+b_post))*(1+np.tanh(a_pre*amp*(1-np.exp(-period/tau))+b_pre)),linewidth=2,color='m',ls='dashed')
 plt.xlim([0,thetmax])
 plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
-plt.ylim([0,2.0])
-plt.yticks([0,0.5,1.,1.5,2.0])
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationH.pdf', bbox_inches='tight')
 plt.xlim([0,tmax])
 plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-plt.ylim([0,2.0])
-plt.yticks([0,0.5,1.,1.5,2.])
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationHzoom.pdf', bbox_inches='tight')
@@ -321,12 +321,12 @@ plt.close()
 #with no stimulation
 #and using W int as the matrix after learning
 #to see is sequences arise
-
-amp=0.5
+print myH[-1,:]
+amp=1.5
 times=10
-delta=4000.
-period=10.
-lagStim=300
+delta=200.
+period=7.
+lagStim=1000
 patterns=np.identity(n)
 patterns=[patterns[:,0]]
 mystim=stimulus(patterns,lagStim,delta,period,times)
@@ -336,7 +336,7 @@ x0=np.zeros(n)
 a0=np.zeros((npts,n))
 x0=np.array([x0 for i in range(npts)])
 #W0=[connectivity[-1,:,:] for i in range(npts)]
-W0=[0.8*np.eye(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
+W0=[0.6*np.eye(n)+0.85*np.eye(n,k=-1) for i in range(npts)]
 H0=[myH[-1,:] for i in range(npts)]
 theintegrator_test=myintegrator(delay,dt,n,tmax)
 theintegrator_test.fast=False
@@ -357,7 +357,7 @@ plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', fa
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlim([0,tmax])
-plt.xticks([0,10000,20000],['0','10','20'])
+plt.xticks([0,4000,8000,12000],[0,4,8,12])
 plt.xlabel('Time (s)')
 plt.ylabel('Rate')
 plt.savefig('sequenceallH.pdf', bbox_inches='tight')
@@ -375,8 +375,8 @@ plt.plot(t_test,elstim,'k',lw=3)
 plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
-plt.xlim([50,400.])
-plt.xticks([50,225,400])
+plt.xlim([0,400.])
+plt.xticks([0,200,400])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencesfirstH.pdf', bbox_inches='tight')
@@ -395,8 +395,8 @@ plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 tmax=times*(lagStim+(period+delta))+4
 #plt.xlim([5*(lagStim+period+delta)+4,5*(lagStim+period+delta)+4+400.])
-plt.xlim([11550,11950])
-plt.xticks([11550,11725,11950])
+plt.xlim([4800,5200])
+plt.xticks([4800,5000,5200])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencessecondH.pdf', bbox_inches='tight')
@@ -414,8 +414,8 @@ plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', fa
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 #plt.xlim([7*(lagStim+period+delta)+4,7*(lagStim+period+delta)+4+400.])
-plt.xlim([16150,16550])
-plt.xticks([16150,16325,16550])
+plt.xlim([4800,5200])
+plt.xticks([4800,5000,5200])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencethirdH.pdf', bbox_inches='tight')
@@ -432,8 +432,8 @@ plt.plot(t_test,elstim,'k',lw=3)
 plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
-plt.xlim([20800,21150])
-plt.xticks([20800,20975,21150])
+plt.xlim([9600,10000])
+plt.xticks([9600,9800,10000])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequenceforthH.pdf', bbox_inches='tight')
@@ -451,7 +451,7 @@ plt.plot(t_test,H_test[:,:])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlim([0,tmax])
-plt.xticks([0,10000,20000],['0','10','20'])
+plt.xticks([0,4000,8000,12000],[0,4,8,12])
 plt.xlabel('Time (s)')
 plt.ylabel('H')
 plt.savefig('HdynamicsSequence.pdf', bbox_inches='tight')
@@ -478,7 +478,7 @@ for i in range(8):
 
 
 plt.xlim([0,tmax])
-plt.xticks([0,10000,20000],['0','10','20'])
+plt.xticks([0,4000,8000,12000],[0,4,8,12])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')

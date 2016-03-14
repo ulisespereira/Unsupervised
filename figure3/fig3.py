@@ -68,7 +68,8 @@ thres=0.9
 dt=0.5
 lagStim=100.
 times=105.
-amp=7.
+
+amp=4.
 
 
 delta=8.
@@ -137,7 +138,7 @@ learningrule3.set_xlabel(r'$u_{Pre}$')
 learningrule3.set_ylabel(r'$u_{Post}$')
 plt.colorbar(myplot,ticks=[0,1,2,3])
 figure.savefig('transferfunction.pdf', bbox_inches='tight')
-plt.show()
+#plt.show()
 plt.close(figure)
 
 print 'tranferfunction.pdf is stored'
@@ -167,14 +168,15 @@ plt.xlabel(r'$\Delta$')
 plt.ylabel(r'$T$')
 plt.savefig('qualitativediagram.pdf', bbox_inches='tight')
 plt.close()
-plt.show()
+#plt.show()
 
 print 'qualitativediagram.pdf is stored'
 
+timesmax=300
 #----------------------------------------------------
 #------- Examples Qualitative Diagram ---------------
 #----------------------------------------------------
-
+amp=5
 timesmax=300
 # region 1
 delta=14.5
@@ -223,12 +225,13 @@ plt.yticks([0,.4,.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('dynamicsweights1.pdf', bbox_inches='tight')
-plt.show()
+#plt.show()
 plt.close()
 
 print 'dynamicsweights1.pdf is stored'
 
 # region 2
+amp=4
 delta=120.
 period=15.5
 times=timesmax
@@ -275,7 +278,8 @@ for i in range(8):
 		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
 plt.xlim([0,tmax])
 #plt.xticks([0,5000,10000])
-plt.xticks([0,40000,80000,120000],['0','40','80','120'])
+plt.xticks([0,100000,200000,300000,400000],[0,100,200,300,400])
+#plt.xticks([0,40000,80000,120000],['0','40','80','120'])
 plt.yticks([0,.4,.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
@@ -320,9 +324,10 @@ plt.close()
 
 print 'dynamicsweights3.pdf is stored'
 # region 4
-delta=4.
-period=10.
-times=timesmax
+amp=3.
+delta=2.
+period=14.
+times=2*timesmax
 
 mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp
@@ -344,7 +349,7 @@ for i in range(9):
 		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,tmax])
+plt.xlim([0,120000])
 #plt.xticks([0,2600,5200])
 plt.xticks([0,40000,80000,120000],['0','40','80','120'])
 plt.yticks([0,.4,.8,1.2])
@@ -356,270 +361,6 @@ plt.close()
 
 
 print 'dynamicsweights4.pdf is stored'
-
-#-------------------------------------------------------------
-#-------------------stimulation instability-------------------
-#-------------------------------------------------------------
-amp=7
-delta=4.
-period=30.
-times=40
-mystim=stimulus(patterns,lagStim,delta,period,times)
-mystim.inten=amp
-tmax=times*(lagStim+n*(period+delta))+40
-#initial conditions
-x0=0.01*np.ones((npts,n))
-W0=[(0.1)*np.ones((n,n)) for i in range(npts)]
-theintegrator=myintegrator(delay,dt,n,tmax)
-theintegrator.fast=False
-
-
-u,Wdiag,Woffdiag,connectivity,W01,t=theintegrator.DDE(field,x0,W0)
-
-## Dynamics 
-mystim.inten=.1
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
-elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-plt.xlim([0,400])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xticks([0,200,400])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation1.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-print 'stimulation1.pdf is stored'
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
-elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-plt.xlim([6450,6850])
-plt.xticks([6450,6650,6850])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation2.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-print 'stimulation2.pdf is stored'
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
-elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-plt.xlim([7600,8000])
-plt.xticks([7600,7800,8000])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation3.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-print 'stimulation3.pdf is stored'
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,u[:,:],lw=3)
-elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-#plt.ylim([0,1.2])
-plt.xlim([0,tmax])
-#plt.xticks([0,5000,10000])
-#plt.yticks([0,0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulationall.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-print 'stimulationall.pdf is stored'
-###dynamics synapses
-
-for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=3)
-for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=3)
-for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
-for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
-for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,tmax])
-#plt.xticks([0,5000,10000])
-plt.yticks([0,1.,2.,3.])
-plt.xlabel('Time (ms)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('connectivitystimulation.pdf', bbox_inches='tight')
-plt.show()
-plt.close()
-
-
-print 'connectivitystimulation.pdf is stored'
-
-data=[connectivity[0,:,:],connectivity[int(len(t)/3.),:,:],connectivity[int(2*len(t)/3.),:,:],connectivity[-1,:,:]]
-fig, axes = plt.subplots(nrows=2, ncols=2)
-for dat, ax in zip(data, axes.flat):
-	    # The vmin and vmax arguments specify the color limit
-	im = ax.matshow(dat, vmin=0, vmax=1.2)
-	# Make an axis for the colorbar on the right side
-cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-fig.colorbar(im, cax=cax)
-plt.savefig('matrixstimulation.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-print 'matrixstimulation.pdf is stored'
-#-------------------------------------------------------
-#-------------- sequences degradation ------------------
-#-------------------------------------------------------
-
-
-amp=1.0
-times=10
-delta=200.
-period=7.
-lagStim=1000
-patterns=np.identity(n)
-patterns=[patterns[:,0]]
-mystim=stimulus(patterns,lagStim,delta,period,times)
-mystim.inten=amp
-tmax=times*(lagStim+(period+delta))+4
-x0=np.zeros(n)
-#x0[0]=10.
-x0=np.array([x0 for i in range(npts)])
-W0=[(1.0)*np.identity(n)+0.85*np.eye(n,k=-1) for i in range(npts)]
-theintegrator_test=myintegrator(delay,dt,n,tmax)
-theintegrator_test.fast=False
-u_test,Wdiag_test,Woffdiag_test,connectivity_test,W0_test,t_test=theintegrator_test.DDE(field,x0,W0)
-mystim.inten=.1
-elstim=np.array([sum(mystim.stim(x)) for x in t_test])
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
-plt.plot(t_test,elstim,'k',lw=3)
-plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-#plt.xticks([0,4000,8000,12000])
-plt.yticks([0.4,0.8,1.2])
-plt.xlim([0,tmax])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('sequenceall.pdf', bbox_inches='tight')
-plt.show()
-plt.close()
-
-print 'sequenceall.pdf is stored'
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
-plt.plot(t_test,elstim,'k',lw=3)
-plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-plt.xlim([0,400.])
-plt.xticks([0,200,400])
-plt.yticks([0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('sequencesfirst.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-print 'sequencefirst.pdf is stored'
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
-plt.plot(t_test,elstim,'k',lw=3)
-plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-plt.xlim([1200,1600.])
-plt.xticks([1200,1400,1600])
-plt.yticks([0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('sequencethird.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-print 'sequencethird.pdf is stored'
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
-plt.plot(t_test,elstim,'k',lw=3)
-plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.1])
-plt.xlim([2400,2800.])
-plt.xticks([2400,2600,2800])
-plt.yticks([0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('sequenceforth.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-
-print 'sequenceforth.pdf is stored'
-###dynamics synapses
-for i in range(10):
-		plt.plot(t_test,connectivity_test[:,i,i],'c',lw=3)
-for i in range(9):
-		plt.plot(t_test,connectivity_test[:,i+1,i],'y',lw=3)
-
-for i in range(8):
-		plt.plot(t_test,connectivity_test[:,i+2,i],'g',lw=3)
-for i in range(9):
-		plt.plot(t_test,connectivity_test[:,i,i+1],'r',lw=3)
-for i in range(8):
-		plt.plot(t_test,connectivity_test[:,i,i+2],'b',lw=3)
-plt.ylim([0,1.2])
-plt.xlim([0,12000])
-plt.xticks([0,4000,8000,12000])
-plt.yticks([0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('connectivitydegradation.pdf', bbox_inches='tight')
-plt.show()
-plt.close()
-
-print 'connectivitydegradation.pdf is stored'
-#connectivity matrices
-
-data=[connectivity_test[0,:,:],connectivity_test[int(len(t_test)/3.),:,:],connectivity_test[int(2*len(t_test)/3.),:,:],connectivity_test[-1,:,:]]
-
-#figure.colorbar(mymatrix,cax=cbaxes)
-fig, axes = plt.subplots(nrows=2, ncols=2)
-for dat, ax in zip(data, axes.flat):
-	    # The vmin and vmax arguments specify the color limit
-	im = ax.matshow(dat, vmin=0, vmax=1.2)
-	# Make an axis for the colorbar on the right side
-cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-fig.colorbar(im, cax=cax)
-plt.savefig('matrixsequences.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
-
-
-
-print 'matrixsequences.pdf is stored'
-
-
 
 
 

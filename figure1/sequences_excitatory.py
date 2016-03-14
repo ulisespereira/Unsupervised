@@ -162,10 +162,10 @@ plt.show()
 
 #connectivity matrix
 W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
-plt.matshow(W01)
+plt.matshow(W01,vmin=-0.2,vmax=0.6)
 plt.xlabel('Connectivity (I)')
 cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-plt.colorbar(cax=cax)
+plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
 plt.savefig('connectivityExc.pdf', bbox_inches='tight')
 plt.show()
 

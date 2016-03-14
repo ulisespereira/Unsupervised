@@ -109,10 +109,10 @@ plt.rcParams.update(**rc)
 #-------------------------------------------------------------
 #-------------------stimulation instability-------------------
 #------------------------------------------------------------
-amp=6.
+amp=6.01
 delta=5.
 period=25.
-times=80
+times=40
 mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp
 tmax=times*(lagStim+n*(period+delta))+40
@@ -152,8 +152,8 @@ elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-plt.xlim([15600,16000])
-plt.xticks([15600,15800,16000])
+plt.xlim([7600,8000])
+plt.xticks([7600,7800,8000])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
@@ -169,8 +169,8 @@ elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-plt.xlim([27600,28000])
-plt.xticks([27600,27800,28000])
+plt.xlim([13600,14000])
+plt.xticks([13600,13800,14000])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
@@ -188,7 +188,7 @@ plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.xlim([0,tmax])
 plt.yticks([0,0.4,0.8,1.2])
-plt.xticks([0,10000,20000,30000],[0,10,20,30])
+plt.xticks([0,5000,10000,15000],[0,5,10,15])
 plt.ylim([0,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Rate')
@@ -210,7 +210,7 @@ for i in range(9):
 for i in range(8):
 		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
 plt.xlim([0,tmax])
-plt.xticks([0,10000,20000,30000],[0,10,20,30])
+plt.xticks([0,5000,10000,15000],[0,5,10,15])
 plt.yticks([0,1.,2.,3.])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
@@ -239,11 +239,11 @@ print 'matrixstimulation.pdf is stored'
 #-------------------------------------------------------
 
 
-amp=0.5
+amp=1.5
 times=10
-delta=4000.
-period=10.
-lagStim=300
+delta=200.
+period=7.
+lagStim=1000
 patterns=np.identity(n)
 patterns=[patterns[:,0]]
 mystim=stimulus(patterns,lagStim,delta,period,times)
@@ -252,7 +252,7 @@ tmax=times*(lagStim+(period+delta))+4
 x0=np.zeros(n)
 #x0[0]=10.
 x0=np.array([x0 for i in range(npts)])
-W0=[(0.8)*np.identity(n)+0.9*np.eye(n,k=-1) for i in range(npts)]
+W0=[(1.0)*np.identity(n)+0.85*np.eye(n,k=-1) for i in range(npts)]
 theintegrator_test=myintegrator(delay,dt,n,tmax)
 theintegrator_test.fast=False
 u_test,Wdiag_test,Woffdiag_test,connectivity_test,W0_test,t_test=theintegrator_test.DDE(field,x0,W0)
@@ -265,10 +265,10 @@ plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
 plt.plot(t_test,elstim,'k',lw=3)
 plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-plt.xticks([0,4000,8000,12000])
+plt.xticks([0,4000,8000,12000],[0,4,8,12])
 plt.yticks([0.4,0.8,1.2])
 plt.xlim([0,tmax])
-plt.xlabel('Time (ms)')
+plt.xlabel('Time (s)')
 plt.ylabel('Rate')
 plt.savefig('sequenceall.pdf', bbox_inches='tight')
 #plt.show()
@@ -298,8 +298,8 @@ plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
 plt.plot(t_test,elstim,'k',lw=3)
 plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-plt.xlim([1200,1600.])
-plt.xticks([1200,1400,1600])
+plt.xlim([4800.,5200.])
+plt.xticks([4800,5000,5200])
 plt.yticks([0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
@@ -313,9 +313,9 @@ plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t_test,phi(u_test[:,:],theta,uc),lw=3)
 plt.plot(t_test,elstim,'k',lw=3)
 plt.fill_between(t_test,np.zeros(len(t_test)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.1])
-plt.xlim([2400,2800.])
-plt.xticks([2400,2600,2800])
+plt.ylim([0,1.2])
+plt.xlim([9600,10000.])
+plt.xticks([9600,9800,10000])
 plt.yticks([0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
@@ -338,8 +338,8 @@ for i in range(9):
 for i in range(8):
 		plt.plot(t_test,connectivity_test[:,i,i+2],'b',lw=3)
 plt.ylim([0,1.2])
-plt.xlim([0,12000])
-plt.xticks([0,4000,8000,12000])
+plt.xlim([0,tmax])
+plt.xticks([0,4000,8000,12000],[0,4,8,12])
 plt.yticks([0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Synaptic Weights')
