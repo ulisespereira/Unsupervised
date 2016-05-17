@@ -44,7 +44,7 @@ def tauWinv(x_hist):
 
 
 def field(t,x_hist,W):
-	field_u=(1/tau)*(mystim.stim(t)+W.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi_tanh(x_hist[-1])))
+	field_u=(1/tau)*(mystim.stim(t)+W.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))
 	field_w=np.multiply(tauWinv(x_hist),(-W+winf(x_hist)))
 	return field_u,field_w
 
@@ -93,6 +93,7 @@ mystim.inten=amp
 #integrato
 npts=int(np.floor(delay/dt)+1)         # points delay
 tmax=times*(lagStim+n*(period+delta))+40
+
 #initial conditions
 x0=0.01*np.ones((npts,n))
 W0=[(0.1)*np.zeros((n,n)) for i in range(npts)]
@@ -109,7 +110,7 @@ plt.rcParams.update(**rc)
 #-------------------------------------------------------------
 #-------------------stimulation instability-------------------
 #------------------------------------------------------------
-amp=6.01
+amp=8.847
 delta=5.
 period=25.
 times=40
