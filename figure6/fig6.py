@@ -17,7 +17,6 @@ def phi(x,theta,uc):
 def phi_tanh(x):
 	return 0.5*(1+np.tanh(a1*(x+b1)))
 
-
 def mytauInv(x): #time scale function synapses
 	myresult=np.zeros(len(x))
 	myresult[x>thres]=1/tau_learning
@@ -48,9 +47,9 @@ def field(t,a,x_hist,W,H):
 	post_u=x_hist[-1]
 	n=len(pre_u)
 	conn_matrix=(W.T*H).T
-	field_u=(1/tau)*(mystim.stim(t)+conn_matrix.dot(phi_tanh(x_hist[-1]))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi_tanh(x_hist[-1])))#-a
+	field_u=(1/tau)*(mystim.stim(t)+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
 	field_a=0.#in the paper we are not using adaptation during learning
-	field_H=(H*(1.-(post_u/y0)))/tau_H
+	field_H=(H*(1.-(post_u/y0))-H**2)/tau_H
 	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
 	return field_a,field_u,field_w,field_H
 
@@ -60,10 +59,10 @@ def field(t,a,x_hist,W,H):
 n=10 #n pop
 delay=15.3
 tau=10.   #timescale of populations
-tau_H=10000.#10000
+tau_H=10000.#200000.
 af=0.1
 bf=0.
-y0=.12*np.ones(n)# 0.12
+y0=.12*np.ones(n)
 w_i=1.
 w_inh=w_i/n
 nu=1.
@@ -88,17 +87,17 @@ a_post=1.
 b_post=-2.3
 a_pre=1.0
 b_pre=-2.3
-tau_learning=400.
+tau_learning=400.#30000.
 
-a1=2.
-b1=-1.5
+a1=6.
+b1=-0.25
 
 
 #-------------------------------------------------------------------
 #-----------------Stimulation of Populations------------------------
 #-------------------------------------------------------------------
 
-# setting up the simulation 
+# settin`g up the simulation 
 
 r1_matrix=np.ones((n,n))
 patterns=np.identity(n)
@@ -119,17 +118,75 @@ H0=[0.5*np.ones(n) for i in range(npts)]
 theintegrator=myintegrator(delay,dt,n,thetmax)
 theintegrator.fast=False
 adapt,u,connectivity,W01,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
-#y0=.02*np.ones(n)# 0.12
-#b1=2.25
-#adapt2,u2,connectivity2,W012,myH2,t2=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
 
 
+#-----------------------------------------------------------------------------------------
+#-------------------------------- Dynamics-----------------------------------------------
+#----------------------------------------------------------------------------------------
+
+rc={'axes.labelsize': 30, 'font.size': 20, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
+
+colormap = plt.cm.Accent
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
+plt.plot(t,phi(u[:,:],theta,uc),lw=2)
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t])
+plt.plot(t,elstim,'k',lw=3)
+plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.ylim([0,1.2])
+plt.xlim([0,400])
+plt.yticks([0,0.4,0.8,1.2])
+plt.xticks([0,200,400])
+plt.xlabel('Time (ms)')
+plt.ylabel('Rate')
+plt.savefig('stimulationH1.pdf', bbox_inches='tight')
+#plt.show()
+plt.close()
+print 'stimulationH1.pdf', ' is saved'
+
+colormap = plt.cm.Accent
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
+plt.plot(t,phi(u[:,:],theta,uc),lw=2)
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t])
+plt.plot(t,elstim,'k',lw=3)
+plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.ylim([0,1.2])
+plt.xlim([4600,5000])
+plt.xticks([4600,4800,5000])
+plt.yticks([0,0.4,0.8,1.2])
+plt.xlabel('Time (ms)')
+plt.ylabel('Rate')
+plt.savefig('stimulationH2.pdf', bbox_inches='tight')
+#plt.show()
+plt.close()
+
+print 'stimulationH2.pdf', ' is saved'
+
+colormap = plt.cm.Accent
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
+plt.plot(t,phi(u[:,:],theta,uc),lw=2)
+mystim.inten=.1
+elstim=np.array([sum(mystim.stim(x)) for x in t])
+plt.plot(t,elstim,'k',lw=3)
+plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+plt.xlim([45850,46250])
+plt.xticks([45850,46050,46250])
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
+plt.xlabel('Time (ms)')
+plt.ylabel('Rate')
+plt.savefig('stimulationH3.pdf', bbox_inches='tight')
+#plt.show()
+plt.close()
+
+print 'stimulationH3.pdf', ' is saved'
 #----------------------------------------------------------------------
 #------------Synaptic Weights------------------------------------------
 #----------------------------------------------------------------------
+#i
 
-rc={'axes.labelsize': 50, 'font.size': 40, 'legend.fontsize': 25, 'axes.titlesize': 30}
-plt.rcParams.update(**rc)
 
 for i in range(10):
 		plt.plot(t,connectivity[:,i,i],'c',lw=2)
@@ -142,13 +199,19 @@ for i in range(9):
 for i in range(8):
 		plt.plot(t,connectivity[:,i,i+2],'b',lw=2)
 
+
+decayTime=-10.*np.log((thres/amp)*1./(1-np.exp(-period/10.)))
+print decayTime+period-10*np.log(1.5)-delay
+print (wmax/4.)*(1.+np.tanh(a_pre*amp+b_pre))*(1.+np.tanh(a_post*amp+b_post))*(1.-np.exp(-(decayTime+period-delay-10*np.log(1.5))/tau_learning))
+print (wmax/4.)*(1.+np.tanh(a_pre*amp+b_pre))*(1.+np.tanh(a_post*amp+b_post))*(1.-np.exp(-10./tau_learning))
+print wmax*(1.-np.exp(-5./tau_learning))
+#plt.axhline(xmin=min(t),xmax=max(t),y=(wmax/4.)*(1.+np.tanh(a_post*(2.-np.exp(-period/tau))*amp+b_post))*(1+np.tanh(a_pre*amp*(1-np.exp(-period/tau))+b_pre)),linewidth=2,color='m',ls='dashed')
 plt.xlim([0,thetmax])
 plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
-#plt.show()
 plt.savefig('connectivitystimulationH.pdf', bbox_inches='tight')
 plt.xlim([0,tmax])
 plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
@@ -157,39 +220,10 @@ plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationHzoom.pdf', bbox_inches='tight')
+#plt.show()
 plt.close()
 
 print 'connectivitystimulationHzoom.pdf',' is saved'
-
-#for i in range(10):
-#		plt.plot(t,connectivity2[:,i,i],'c',lw=2)
-#for i in range(0,9):
-#		plt.plot(t,connectivity2[:,i+1,i],'y',lw=2)
-#for i in range(8):
-#		plt.plot(t,connectivity2[:,i+2,i],'g',lw=2)
-#for i in range(9):
-#		plt.plot(t,connectivity2[:,i,i+1],'r',lw=2)
-#for i in range(8):
-#		plt.plot(t,connectivity2[:,i,i+2],'b',lw=2)
-#
-#plt.xlim([0,thetmax])
-#plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
-#plt.ylim([0,1.2])
-#plt.yticks([0,0.4,0.8,1.2])
-#plt.xlabel('Time (s)')
-#plt.ylabel('Synaptic Weights')
-##plt.show()
-#plt.savefig('connectivitystimulationH2.pdf', bbox_inches='tight')
-#plt.xlim([0,tmax])
-#plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-#plt.ylim([0,1.2])
-#plt.yticks([0,0.4,0.8,1.2])
-#plt.xlabel('Time (s)')
-#plt.ylabel('Synaptic Weights')
-#plt.savefig('connectivitystimulationHzoom2.pdf', bbox_inches='tight')
-#plt.close()
-#
-#print 'connectivitystimulationHzoom2.pdf',' is saved'
 #------------------------------------------------------------------------
 #-------------Homeostatic Variable --------------------------------------
 #------------------------------------------------------------------------
@@ -198,16 +232,13 @@ print 'connectivitystimulationHzoom.pdf',' is saved'
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 plt.plot(t,myH[:],lw=2)
-plt.ylim([0,20.])
-plt.yticks([0,5,10,15,20])
+plt.ylim([0,1.2])
+plt.yticks([0,0.4,0.8,1.2])
 plt.xlim([0,thetmax])
 plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
 plt.xlabel('Time (s)')
 plt.ylabel('H')
-i#plt.show()
 plt.savefig('HdynamicsLearning.pdf', bbox_inches='tight')
-plt.ylim([0,1.])
-plt.yticks([0,0.4,0.8,1.2])
 plt.xlim([0,tmax])
 plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
 plt.xlabel('Time (s)')
@@ -219,29 +250,65 @@ plt.close()
 
 print 'HdynamicsLearningzoom.pdf',' is saved'
 
+#--------------------------------------------------------------------------------
+#-----------The Connectivity Matrices--------------------------------------------
+#--------------------------------------------------------------------------------
+
+# connectivity matrix during the stimulation
+data=[connectivity[0,:,:],connectivity[int((tmax/dt)/3.),:,:],connectivity[int(2*(tmax/dt)/3.),:,:],connectivity[int(tmax/dt),:,:]]
+fig, axes = plt.subplots(nrows=2, ncols=2)
+for dat, ax in zip(data, axes.flat):
+	    # The vmin and vmax arguments specify the color limit
+	im = ax.matshow(dat, vmin=0, vmax=1.2)
+	# Make an axis for the colorbar on the right side
+#cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+#fig.colorbar(im, cax=cax)
+plt.savefig('matrixstimulationH.pdf', bbox_inches='tight')
+print 'matrixstimulationH.pdf',' is saved'
+#plt.show()
+plt.close()
 
 
-#colormap = plt.cm.Accent
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#plt.plot(t,myH2[:],lw=2)
-#plt.ylim([0,1.2])
-#plt.yticks([0,0.4,0.8,1.2])
-#plt.xlim([0,thetmax])
-#plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
-#plt.xlabel('Time (s)')
-#plt.ylabel('H')
-#i#plt.show()
-#plt.savefig('HdynamicsLearning2.pdf', bbox_inches='tight')
-#plt.xlim([0,tmax])
-#plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-#plt.xlabel('Time (s)')
-#plt.ylabel('H')
-#plt.savefig('HdynamicsLearningzoom2.pdf', bbox_inches='tight')
-##plt.show()
-#plt.close()
-#
-#
-#print 'HdynamicsLearningzoom2.pdf',' is saved'
-#
-#
-#
+#matrix connectivity and homoestatic variable during stimulation
+data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [0,int((tmax/dt)/3.),int((tmax/dt)*2./3.),int(tmax/dt)] ]
+fig, axes = plt.subplots(nrows=2, ncols=2)
+for dat, ax in zip(data, axes.flat):
+	    # The vmin and vmax arguments specify the color limit
+	im = ax.matshow(dat, vmin=0, vmax=1.2)
+	# Make an axis for the colorbar on the right side
+#cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+#fig.colorbar(im, cax=cax)
+plt.savefig('matrixstimulationHhom.pdf', bbox_inches='tight')
+print 'matrixstimulationHhom.pdf',' is saved'
+#plt.show()
+plt.close()
+
+# matrix connectivity after stimulation
+data=[connectivity[int(tmax/dt),:,:],connectivity[int(tmax/dt+((thetmax-tmax)/dt)/3.),:,:],connectivity[int(tmax/dt+2*((thetmax-tmax)/dt)/3.),:,:],connectivity[-1,:,:]]
+fig, axes = plt.subplots(nrows=2, ncols=2)
+for dat, ax in zip(data, axes.flat):
+	    # The vmin and vmax arguments specify the color limit
+	im = ax.matshow(dat, vmin=0, vmax=1.2)
+	# Make an axis for the colorbar on the right side
+#cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+#fig.colorbar(im, cax=cax)
+plt.savefig('matrixstimulationHFinal.pdf', bbox_inches='tight')
+print 'matrixstimulationHFinal.pdf',' is saved'
+#plt.show()
+plt.close()
+
+# matrix connectivity and homeostatic after stimulation 
+data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [int(tmax/dt),int(tmax/dt+((thetmax-tmax)/dt)/3.),int(tmax/dt+((thetmax-tmax)/dt)*2./3.),-1] ]
+fig, axes = plt.subplots(nrows=2, ncols=2)
+for dat, ax in zip(data, axes.flat):
+	    # The vmin and vmax arguments specify the color limit
+	im = ax.matshow(dat, vmin=0, vmax=1.2)
+	# Make an axis for the colorbar on the right side
+cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+fig.colorbar(im, cax=cax)
+plt.savefig('matrixstimulationHhomFinal.pdf', bbox_inches='tight')
+print 'matrixstimulationHhomFinal.pdf',' is saved'
+#plt.show()
+plt.close()
+
+
