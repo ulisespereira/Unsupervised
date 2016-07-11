@@ -54,6 +54,18 @@ def field(t,a,x_hist,W,H):
 	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
 	return field_a,field_u,field_w,field_H
 
+def fieldQuadratic(t,a,x_hist,W,H):
+	pre_u=x_hist[0]
+	post_u=x_hist[-1]
+	n=len(pre_u)
+	conn_matrix=(W.T*H).T
+	field_u=(1/tau)*(mystim.stim(t)+conn_matrix.dot(phi_tanh(x_hist[-1]))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi_tanh(x_hist[-1])))#-a
+	field_a=0.#in the paper we are not using adaptation during learning
+	field_H=(H*(1.-(post_u/y0))-H*H)/tau_H
+	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
+	return field_a,field_u,field_w,field_H
+
+#This are a the parameters of the simulation
 #This are a the parameters of the simulation
 
 #open parameters of the model
@@ -119,9 +131,10 @@ H0=[0.5*np.ones(n) for i in range(npts)]
 theintegrator=myintegrator(delay,dt,n,thetmax)
 theintegrator.fast=False
 adapt,u,connectivity,W01,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
-#y0=.02*np.ones(n)# 0.12
-#b1=2.25
-#adapt2,u2,connectivity2,W012,myH2,t2=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
+adaptQ,uQ,connectivityQ,W01Q,myHQ,tQ=theintegrator.DDE_Norm_Miller(fieldQuadratic,a0,x0,W0,H0)
+
+
+
 
 
 #----------------------------------------------------------------------
@@ -132,23 +145,23 @@ rc={'axes.labelsize': 50, 'font.size': 40, 'legend.fontsize': 25, 'axes.titlesiz
 plt.rcParams.update(**rc)
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=2)
+		plt.plot(t,connectivity[:,i,i],'c',lw=4)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=2)
-for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=2)
-for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=2)
-for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=2)
+		plt.plot(t,connectivity[:,i+1,i],'y',lw=4)
 
+print 'connectivitystimulationHzoom.pdf',' is saved'
+
+for i in range(10):
+		plt.plot(t,connectivityQ[:,i,i],'b--',lw=4,alpha=0.5)
+for i in range(0,9):
+		plt.plot(t,connectivityQ[:,i+1,i],'g--',lw=4,alpha=0.5)
 plt.xlim([0,thetmax])
 plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
-#plt.show()
+
 plt.savefig('connectivitystimulationH.pdf', bbox_inches='tight')
 plt.xlim([0,tmax])
 plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
@@ -159,37 +172,6 @@ plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationHzoom.pdf', bbox_inches='tight')
 plt.close()
 
-print 'connectivitystimulationHzoom.pdf',' is saved'
-
-#for i in range(10):
-#		plt.plot(t,connectivity2[:,i,i],'c',lw=2)
-#for i in range(0,9):
-#		plt.plot(t,connectivity2[:,i+1,i],'y',lw=2)
-#for i in range(8):
-#		plt.plot(t,connectivity2[:,i+2,i],'g',lw=2)
-#for i in range(9):
-#		plt.plot(t,connectivity2[:,i,i+1],'r',lw=2)
-#for i in range(8):
-#		plt.plot(t,connectivity2[:,i,i+2],'b',lw=2)
-#
-#plt.xlim([0,thetmax])
-#plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
-#plt.ylim([0,1.2])
-#plt.yticks([0,0.4,0.8,1.2])
-#plt.xlabel('Time (s)')
-#plt.ylabel('Synaptic Weights')
-##plt.show()
-#plt.savefig('connectivitystimulationH2.pdf', bbox_inches='tight')
-#plt.xlim([0,tmax])
-#plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-#plt.ylim([0,1.2])
-#plt.yticks([0,0.4,0.8,1.2])
-#plt.xlabel('Time (s)')
-#plt.ylabel('Synaptic Weights')
-#plt.savefig('connectivitystimulationHzoom2.pdf', bbox_inches='tight')
-#plt.close()
-#
-#print 'connectivitystimulationHzoom2.pdf',' is saved'
 #------------------------------------------------------------------------
 #-------------Homeostatic Variable --------------------------------------
 #------------------------------------------------------------------------
@@ -197,7 +179,8 @@ print 'connectivitystimulationHzoom.pdf',' is saved'
 
 colormap = plt.cm.Accent
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,myH[:],lw=2)
+plt.plot(t,myH[:],lw=4)
+plt.plot(tQ,myHQ[:],'--',lw=4)
 plt.ylim([0,20.])
 plt.yticks([0,5,10,15,20])
 plt.xlim([0,thetmax])
@@ -219,29 +202,44 @@ plt.close()
 
 print 'HdynamicsLearningzoom.pdf',' is saved'
 
+#--------------------------------------------------------------------------
+#-------------Printing Connectivity Matrices-------------------------------
+#--------------------------------------------------------------------------
 
 
-#colormap = plt.cm.Accent
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#plt.plot(t,myH2[:],lw=2)
-#plt.ylim([0,1.2])
-#plt.yticks([0,0.4,0.8,1.2])
-#plt.xlim([0,thetmax])
-#plt.xticks([0,50000,100000,150000,200000],[0,50,100,150,200])
-#plt.xlabel('Time (s)')
-#plt.ylabel('H')
-#i#plt.show()
-#plt.savefig('HdynamicsLearning2.pdf', bbox_inches='tight')
-#plt.xlim([0,tmax])
-#plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-#plt.xlabel('Time (s)')
-#plt.ylabel('H')
-#plt.savefig('HdynamicsLearningzoom2.pdf', bbox_inches='tight')
-##plt.show()
-#plt.close()
-#
-#
-#print 'HdynamicsLearningzoom2.pdf',' is saved'
-#
-#
-#
+# matrix connectivity and homeostatic after stimulation 
+linearW=np.transpose(np.multiply(np.transpose(connectivity[-1,:,:]),myH[-1,:]))
+linearWsep=np.transpose(connectivity[-1,:,:])
+QW=np.transpose(np.multiply(np.transpose(connectivityQ[-1,:,:]),myHQ[-1,:]))
+QWsep=np.transpose(connectivityQ[-1,:,:])
+
+#titles=['Linear'+r' $\matbb{W}$','Linear'+r' $\matbf{W}$','Modified'+r' $\matbb{W}$','Modified'+r' $\matbf{W}$']
+fig, axes = plt.subplots()
+im=axes.matshow(linearWsep, vmin=0, vmax=1.2)
+cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+fig.colorbar(im, cax=cax,ticks=[0,0.4,0.8,1.2])
+plt.savefig('linearWsep.pdf', bbox_inches='tight')
+plt.close()
+
+fig, axes = plt.subplots()
+im=axes.matshow(linearW, vmin=0, vmax=15)
+cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+fig.colorbar(im, cax=cax,ticks=[0,5,10,15])
+plt.savefig('linearW.pdf', bbox_inches='tight')
+plt.close()
+
+fig, axes = plt.subplots()
+im=axes.matshow(QWsep, vmin=0, vmax=1.2)
+cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+fig.colorbar(im, cax=cax,ticks=[0,0.4,0.8,1.2])
+plt.savefig('QWsep.pdf', bbox_inches='tight')
+plt.close()
+
+fig, axes = plt.subplots()
+im=axes.matshow(QW, vmin=0, vmax=1.2)
+cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+fig.colorbar(im, cax=cax,ticks=[0,0.4,0.8,1.2])
+plt.savefig('QW.pdf', bbox_inches='tight')
+plt.close()
+
+

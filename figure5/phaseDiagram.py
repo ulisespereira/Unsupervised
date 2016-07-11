@@ -37,53 +37,42 @@ def fieldSimpleModelAmended(x,t):
 umin=-0.1
 umax=2
 Hmin=0.1
-Hmax=400
+Hmax=75
 u_null=np.linspace(umin,umax,500)
 #----------------------------------------------------------------------
 #-------------------- Model--------------------------------------------
 #----------------------------------------------------------------------
 plt.axvline(y0, color='red',lw=3)
-w=0.1
-plt.plot(u_null,nullcline_u(u_null),color='b',lw=4,label=r'$w=0.1$')
-Hstar_0_1=nullcline_u(y0)
-plt.plot(y0,Hstar_0_1,'ob',markersize=12,alpha=1)
-myh0=np.linspace(Hstar_0_1*0.7,Hstar_0_1*1.8,30)
-for H0 in myh0: 
-	x0=np.array([0.5,H0])
-	t = np.linspace(0, 1e3, 1e4)
-	sol = odeint(fieldSimpleModel,x0,t)
-	plt.plot(sol[:,0],sol[:,1],color='b',alpha=0.2)
 w=0.5
 plt.plot(u_null,nullcline_u(u_null),color='g',lw=3,label=r'$w=0.5$')
 Hstar_0_5=nullcline_u(y0)
 plt.plot(y0,Hstar_0_5,'og',markersize=12,alpha=0.9)
-myh0=np.linspace(Hstar_0_5*0.7,Hstar_0_5*2,30)
+myh0=np.linspace(Hstar_0_5*2.,Hstar_0_5*2,1)
 for H0 in myh0: 
 	x0=np.array([0.5,H0])
 	t = np.linspace(0, 1e3, 1e4)
 	sol = odeint(fieldSimpleModel,x0,t)
-	plt.plot(sol[:,0],sol[:,1],color='g',alpha=0.2)
+	plt.plot(sol[:,0],sol[:,1],':k',alpha=.5,lw=6)
 w=1.2
 plt.plot(u_null,nullcline_u(u_null),color='m',lw=3,label=r'$w=1.2$')
 Hstar_1_2=nullcline_u(y0)
 plt.plot(y0,Hstar_1_2,'om',markersize=12,alpha=0.9)
-myh0=np.linspace(Hstar_1_2*0.7,Hstar_1_2*2,30)
+myh0=np.linspace(Hstar_1_2*2.,Hstar_1_2*2,1)
 for H0 in myh0: 
 	x0=np.array([0.5,H0])
 	t = np.linspace(0, 1e3, 1e4)
 	sol = odeint(fieldSimpleModel,x0,t)
-	plt.plot(sol[:,0],sol[:,1],color='m',alpha=0.2)
+	plt.plot(sol[:,0],sol[:,1],'--k',alpha=.5,lw=6)
 
 
 plt.xlim([umin,umax])
 plt.ylim([Hmin,Hmax])
 plt.xticks([0,1,2],size=30)
-plt.yticks([0,100,200,300,400],size=30)
+plt.yticks([0,50,100],size=30)
 plt.legend(loc='upper right',fontsize=25)
 plt.xlabel(r'$u$',size=40)
 plt.ylabel(r'$H$',size=40)
-plt.savefig('SimpleModel.pdf', bbox_inches='tight')
-#plt.show(plot1) 
+plt.savefig('SimpleModel.pdf', bbox_inches='tight',transparent=True)
 plt.close()
 
 #--------------------------------------------------------------------
@@ -91,79 +80,75 @@ plt.close()
 #---------------------------------------------------------------------
 
 plt.plot(u_null,nullcline_H_Amended(u_null), color='red',lw=4)
-w=0.1
-plt.plot(u_null,nullcline_u(u_null),color='b',lw=4,label=r'$w=0.1$')
-sol=root(fieldSimpleModelAmended,np.array([0.01,0.8]),args=(0))
-H_star=sol.x[1]
-u_star=sol.x[0]
-plt.plot(u_star,H_star,'ob',markersize=12,alpha=1)
-myh0=np.linspace(Hstar_0_1*0.7,Hstar_0_1*1.8,30)
-for H0 in myh0: 
-	x0=np.array([0.5,H0])
-	t = np.linspace(0, 1e3, 1e4)
-	sol = odeint(fieldSimpleModelAmended,x0,t)
-	plt.plot(sol[:,0],sol[:,1],color='b',alpha=0.2)
 w=0.5
-plt.plot(u_null,nullcline_u(u_null),color='g',lw=3,label=r'$w=0.5$')
+plt.plot(u_null,nullcline_u(u_null),color='g',lw=4,label=r'$w=0.5$')
 sol=root(fieldSimpleModelAmended,np.array([0.01,0.8]),args=(0))
 H_star=sol.x[1]
 u_star=sol.x[0]
-plt.plot(u_star,H_star,'og',markersize=12,alpha=1)
-myh0=np.linspace(Hstar_0_5*0.7,Hstar_0_5*1.8,30)
+plt.plot(u_star,H_star,'og',markersize=20,alpha=1)
+myh0=np.linspace(Hstar_0_5*2.,Hstar_0_5*1.8,1)
 for H0 in myh0: 
 	x0=np.array([0.5,H0])
 	t = np.linspace(0, 1e3, 1e4)
 	sol = odeint(fieldSimpleModelAmended,x0,t)
-	plt.plot(sol[:,0],sol[:,1],color='g',alpha=0.2)
+	plt.plot(sol[:,0],sol[:,1],':k',lw=6,alpha=0.5)
 w=1.2
-plt.plot(u_null,nullcline_u(u_null),color='m',lw=3,label=r'$w=1.2$')
+plt.plot(u_null,nullcline_u(u_null),color='m',lw=4,label=r'$w=1.2$')
 sol=root(fieldSimpleModelAmended,np.array([0.01,0.8]),args=(0))
 H_star=sol.x[1]
 u_star=sol.x[0]
-plt.plot(u_star,H_star,'om',markersize=12,alpha=1)
-myh0=np.linspace(Hstar_1_2*0.7,Hstar_1_2*2,30)
+plt.plot(u_star,H_star,'om',markersize=20,alpha=1)
+myh0=np.linspace(Hstar_1_2*2.,Hstar_1_2*2,1)
 for H0 in myh0: 
 	x0=np.array([0.5,H0])
 	t = np.linspace(0, 1e3, 1e4)
 	sol = odeint(fieldSimpleModelAmended,x0,t)
-	plt.plot(sol[:,0],sol[:,1],color='m',alpha=0.2)
+	plt.plot(sol[:,0],sol[:,1],'--k',lw=6,alpha=0.5)
 
 
 plt.xlim([umin,umax])
 plt.ylim([Hmin,Hmax])
 plt.xticks([0,1,2],size=30)
-plt.yticks([0,100,200,300,400],size=30)
+plt.yticks([0,50,100],size=30)
 plt.xlabel(r'$u$',size=40)
 plt.ylabel(r'$H$',size=40)
-plt.savefig('SimpleModelAmmended.pdf', bbox_inches='tight')
-plt.xlim([0.,0.005])
-plt.ylim([0,1.5])
+plt.savefig('SimpleModelAmmended.pdf', bbox_inches='tight',transparent=True)
+plt.xlim([-0.0001,0.005])
+plt.ylim([0,1.2])
 plt.xticks([0.0025,0.005],size=30)
-plt.yticks([0,0.5,1,1.5],size=30)
+plt.yticks([0,0.4,0.8,1.2],size=30)
 plt.xlabel(r'$u$',size=40)
 plt.ylabel(r'$H$',size=40)
-plt.savefig('SimpleModelAmmendedZoom.pdf', bbox_inches='tight')
+plt.savefig('SimpleModelAmmendedZoom.pdf', bbox_inches='tight',transparent=True)
 plt.close() 
 
 
 
+myw=np.linspace(0.1,1,100)
+myHAmended=[]
+myH=[]
+i=0
+for thew in myw:
+	w=thew
+	solAmmended=root(fieldSimpleModelAmended,np.array([0.01,.8]),args=(0))
+	myHAmended.append(solAmmended.x[1])
+	myH.append(nullcline_u(y0))
+#	print i,solAmmended.x[1]
+	i=i+1
+
+plt.plot(myw,np.array(myHAmended),color='b',lw=4)
+plt.plot(myw,myH,lw=4,color='orange')
+plt.xlim([0.1,1])
+plt.xlabel(r'$w$',size=40)
+plt.ylabel(r'$H^*$',size=40)
+plt.xticks([0.1,0.5,1],size=30)
+plt.yticks([0,100,200],size=30)
+plt.savefig('Hvsw.pdf', bbox_inches='tight',transparent=True)
+plt.ylim([0.0,1.5])
+plt.yticks([0,0.5,1.,1.5],size=30)
+plt.savefig('HvswZoom.pdf', bbox_inches='tight',transparent=True)
+#plt.show()
 
 
-
-
-
-
-
-
-# nullcline
-
-
-
-
-
-
-
-
-# nullcline
 
 
