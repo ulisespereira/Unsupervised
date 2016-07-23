@@ -229,7 +229,7 @@ for param in delta_T:
 	figure=plt.figure()
 	colormap = plt.cm.Accent
 	#dynamics
-	dynamics=figure.add_subplot(311)
+	dynamics=figure.add_subplot(111)
 	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 	dynamics.plot(t1,phi(u1,theta,uc),lw=2)
 	#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
@@ -246,30 +246,30 @@ for param in delta_T:
 	#plt.xticks([])
 	#plt.yticks([])
 	
-	#dynamics
-	dynamics2=figure.add_subplot(312)
-	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	dynamics2.plot(t1,myH1,lw=2.)
-	dynamics2.set_xlim([0,1000])
-	dynamics2.set_ylim([0,1.2])
-	dynamics2.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
-	dynamics2.set_yticks([0,0.4,0.8,1.2])
-	dynamics2.set_xlabel('Time (ms)')
-	dynamics2.set_ylabel('H',fontsize=18)
-	
-	dynamics3=figure.add_subplot(313)
-	for i in range(10):
-		dynamics3.plot(t1,connectivity1[:,i,i],'c',lw=3)
-	for i in range(0,9):
-		dynamics3.plot(t1,connectivity1[:,i+1,i],'y',lw=3)	
-	
-	dynamics3.set_xlim([0,1000])
-	dynamics3.set_ylim([0,2.0])
-	dynamics3.set_yticks([0,0.5,1.,1.5,2.])
-	dynamics3.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
-	dynamics3.set_xlabel('Time (ms)',fontsize=18)
-	dynamics3.set_ylabel('Synaptic Weights',fontsize=18)
-
+#	#dynamics
+#	dynamics2=figure.add_subplot(312)
+#	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
+#	dynamics2.plot(t1,myH1,lw=2.)
+#	dynamics2.set_xlim([0,1000])
+#	dynamics2.set_ylim([0,1.2])
+#	dynamics2.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
+#	dynamics2.set_yticks([0,0.4,0.8,1.2])
+#	dynamics2.set_xlabel('Time (ms)')
+#	dynamics2.set_ylabel('H',fontsize=18)
+#	
+#	dynamics3=figure.add_subplot(313)
+#	for i in range(10):
+#		dynamics3.plot(t1,connectivity1[:,i,i],'c',lw=3)
+#	for i in range(0,9):
+#		dynamics3.plot(t1,connectivity1[:,i+1,i],'y',lw=3)	
+#	
+#	dynamics3.set_xlim([0,1000])
+#	dynamics3.set_ylim([0,2.0])
+#	dynamics3.set_yticks([0,0.5,1.,1.5,2.])
+#	dynamics3.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
+#	dynamics3.set_xlabel('Time (ms)',fontsize=18)
+#	dynamics3.set_ylabel('Synaptic Weights',fontsize=18)
+#
 	name='dynamics_'+str(elT)+'_'+str(eldelta)+'.pdf'
 	plt.savefig(name, bbox_inches='tight')
 	plt.close()
