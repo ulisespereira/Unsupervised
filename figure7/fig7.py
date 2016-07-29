@@ -194,9 +194,9 @@ theo_w=np.array([recurrentTheo(myt,period,tstart1) for myt in t])
 theo_s=np.array([feedforwardTheo(myt,period,delta,tstart2) for myt in t])
 # figrue 1
 
-rc={'axes.labelsize': 30, 'font.size': 30, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
-plt.rcParams.update(**rc)
 
+rc={'axes.labelsize': 50, 'font.size': 40, 'legend.fontsize': 25, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
 
 
 figure=plt.figure(figsize=(25,10))
@@ -206,24 +206,26 @@ recurrentFig1.plot(t,u[:,2],'b',lw=6)
 #recurrentFig1.plot(t,thres*np.ones(len(u[:,1])),'r',lw=3)
 recurrentFig1.plot(t,theo_u1,'r--',lw=6,alpha=0.8)
 recurrentFig1.plot(t,theo_u2,'r--',lw=6,alpha=0.8)
-recurrentFig1.set_xlabel('Time (ms)',size=28)
-recurrentFig1.set_ylabel(r'$u$',size=28)
+recurrentFig1.set_xlabel('Time (ms)',size=40)
+recurrentFig1.set_ylabel(r'$u$',size=70)
 recurrentFig1.set_xticks([100,150,200])
 recurrentFig1.set_yticks([1.,2,3.,4,5.])
-recurrentFig1.set_ylim([thres,5])
+recurrentFig1.set_ylim([0,5])
 recurrentFig1.set_xlim([90,210])
-recurrentFig1.set_title('(A)')
+recurrentFig1.set_title('(A)',size=60,fontweight='bold')
+recurrentFig1.axhline(y=0.9,xmin=0,xmax=500,linewidth=6,color='k',linestyle=':',alpha=0.8)
+
 
 recurrentFig2=figure.add_subplot(122)
 recurrentFig2.plot(t,connectivity[:,1,1],'c',lw=5)
 recurrentFig2.plot(t,theo_w,'r--',lw=6,alpha=0.8)
-recurrentFig2.set_ylabel('Synaptic Weight',size=28)
-recurrentFig2.set_xlabel('Time (ms)',size=28)
+recurrentFig2.set_ylabel('Synaptic Weight',size=40)
+recurrentFig2.set_xlabel('Time (ms)',size=40)
 recurrentFig2.set_xticks([100,150,200])
 recurrentFig2.set_yticks([0.1,0.2,0.3])
 recurrentFig2.set_ylim([0.1,0.3])
 recurrentFig2.set_xlim([100,200])
-recurrentFig2.set_title('(B)')
+recurrentFig2.set_title('(B)',size=60,fontweight='bold')
 
 #recurrentFig3=figure.add_subplot(133)
 recurrentFig2.plot(t,connectivity[:,2,1],'y',lw=7)
