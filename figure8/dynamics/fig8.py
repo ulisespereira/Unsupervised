@@ -217,7 +217,7 @@ for param in delta_T:
 	W0_2=[connectivity[-1,:,:] for i in range(npts)]
 	H0_2=[np.ones(n) for i in range(npts)]
 	
-	rc={'axes.labelsize': 30, 'font.size': 22, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
+	rc={'axes.labelsize': 50, 'font.size': 50, 'legend.fontsize': 50., 'axes.titlesize': 50}
 		
 	mystim.inten=0.
 	tau_learning=30000.
@@ -226,19 +226,20 @@ for param in delta_T:
 	theintegrator.fast=False
 	adapt1,u1,connectivity1,W011,myH1,t1=theintegrator.DDE_Norm_Miller(field,a0_1,x0_1,W0_1,H0_1)
 	#adapt2,u2,connectivity2,W012,myH2,t2=theintegrator.DDE_Norm_Miller(field,a0_2,x0_2,W0_2,H0_2)
-	figure=plt.figure()
+	figure=plt.figure(figsize=(25,10))
 	colormap = plt.cm.Accent
 	#dynamics
 	dynamics=figure.add_subplot(111)
 	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	dynamics.plot(t1,phi(u1,theta,uc),lw=2)
+	dynamics.plot(t1,phi(u1,theta,uc),lw=6)
 	#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
+	dynamics.tick_params(labelsize=55)
 	dynamics.set_yticks([0,0.4,0.8,1.2])
 	dynamics.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
 	dynamics.set_xlim([0,1000])
 	dynamics.set_ylim([0,1.2])
-	dynamics.set_xlabel('Time (ms)',fontsize=18)
-	dynamics.set_ylabel('Rate',fontsize=18)
+	dynamics.set_xlabel('Time (ms)',fontsize=75)
+	dynamics.set_ylabel('Rate',fontsize=75)
 
 	#inset_axes = inset_axes(dynamics,width="50%",height=1.0,loc=1)
 	#a = plt.plot(t1,phi(u1,theta,uc))
@@ -275,14 +276,17 @@ for param in delta_T:
 	plt.close()
 	#plt.show()
 	
+	figure2=plt.figure(figsize=(25,10))
+	dynamicszoom=figure2.add_subplot(111)
 	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	plt.plot(t1,phi(u1,theta,uc),lw=2)
-	plt.xlim([0,400])
-	plt.ylim([0,1.2])
-	plt.xticks([0,100,200,300,400])
-	plt.yticks([0,0.4,0.8,1.2])
-	plt.xlabel('Time (ms)',fontsize=18)
-	plt.ylabel('Rate',fontsize=18)
+	dynamicszoom.plot(t1,phi(u1,theta,uc),lw=6)
+	dynamicszoom.set_xlim([0,400])
+	dynamicszoom.set_ylim([0,1.2])
+	dynamicszoom.tick_params(labelsize=70)
+	dynamicszoom.set_xticks([0,100,200,300,400])
+	dynamicszoom.set_yticks([0,0.4,0.8,1.2])
+	dynamicszoom.set_xlabel('Time (ms)',fontsize=80)
+	dynamicszoom.set_ylabel('Rate',fontsize=80)
 	name='dynamics_'+str(elT)+'_'+str(eldelta)+'_zoom.pdf'
 	plt.savefig(name, bbox_inches='tight')
 	plt.close()
