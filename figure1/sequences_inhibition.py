@@ -46,12 +46,12 @@ def net_matrix(wmax_min,wmax_max,sdel_min,sdel_max,n,k):
 #fields approximations
 
 def field_tanh(x,t):
-	return net(wmax,sdel,n,k).dot(phi_tanh(x))-x-w_inh*np.dot(r1_matrix,phi_tanh(x))
+	return (1./tau)*(net(wmax,sdel,n,k).dot(phi_tanh(x))-x-w_inh*np.dot(r1_matrix,phi_tanh(x)))
 def field_pw(x,t):
-	return net(wmax,sdel,n,k).dot(phi(x,theta,uc))-x-w_inh*np.dot(r1_matrix,phi(x,theta,uc))
+	return (1./tau)*(net(wmax,sdel,n,k).dot(phi(x,theta,uc))-x-w_inh*np.dot(r1_matrix,phi(x,theta,uc)))
 
 def field_brunel(x,t):
-	return net(wmax,sdel,n,k).dot(phi_brunel(x,theta,uc))-x-w_inh*np.dot(r1_matrix,phi_brunel(x,theta,uc))
+	return (1./tau)*(net(wmax,sdel,n,k).dot(phi_brunel(x,theta,uc))-x-w_inh*np.dot(r1_matrix,phi_brunel(x,theta,uc)))
 #field true 
 def field_true_tanh(x,t):
 	n=len(x)
@@ -129,9 +129,13 @@ rc={'axes.labelsize': 30, 'font.size': 20, 'legend.fontsize': 28.0, 'axes.titles
 plt.rcParams.update(**rc)
 #approx
 #true
-ytanh_true,timetanh_true=rk4(field_true_pw,y0_true,0.1,500)
+ytanh_true,timetanh_true=rk4(field_true_tanh,y0_true,0.1,500)
 ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,500)
 ybrunel_true,timebrunel_true=rk4(field_true_brunel,y0_true,0.1,500)
+
+ytanh,timetanh=rk4(field_tanh,y0,0.1,500)
+ypw,timepw=rk4(field_pw,y0,0.1,500)
+ybrunel,timebrunel=rk4(field_brunel,y0,0.1,500)
 
 #figure
 
@@ -142,7 +146,8 @@ plt.xlabel('Effective Connectivity (II)')
 cax = plt.axes([0.95, 0.1, 0.03, 0.8])
 plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
 plt.savefig('connectivityInhib.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 
 
 W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
@@ -157,7 +162,8 @@ for dat, ax in zip(data, axes.flat):
 cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
 fig.colorbar(im, cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
 plt.savefig('matrixsequences.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 #transfer function
 
 myu=np.linspace(-.5,1.5,200)
@@ -170,7 +176,8 @@ plt.xlabel('Current')
 plt.ylabel('Transfer Function')
 plt.legend([thepw,thetanh,thebrunel],['PL','S','PNL'],loc='upper left')
 plt.savefig('transferFunctions.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 
 
 #dynamics
@@ -205,6 +212,25 @@ pwlinear.set_yticks([0,1.,2,3.])
 pwlinear.set_xlabel('Time (ms)')
 pwlinear.set_ylabel('Rate')
 plt.savefig('sequencesInhibition.pdf', bbox_inches='tight')
+plt.close()
+#plt.show()
+
+
+rc={'axes.labelsize': 35, 'font.size': 25, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
+figure=plt.figure()
+colormap = plt.cm.Accent
+tanh=figure.add_subplot(111)
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
+tanh.plot(timetanh_true,phi_tanh(ytanh_true[:,0:n]),lw=2)
+tanh.plot(timetanh,phi_tanh(ytanh[:,0:n]),lw=3,color='k',alpha=0.4,ls='--')
+tanh.set_xlim([0,350.])
+tanh.set_ylim([0,1.2])
+tanh.set_xticks([0,100,200,300])
+tanh.set_yticks([0,0.4,0.8,1.2])
+tanh.set_xlabel('Time (ms)')
+tanh.set_ylabel('Rate')
+plt.savefig('full_vs_approx.pdf', bbox_inches='tight')
 plt.show()
 
 
