@@ -47,8 +47,8 @@ def field(t,a,x_hist,W,H):
 	post_u=x_hist[-1]
 	n=len(pre_u)
 	conn_matrix=(W.T*H).T
-	noise=np.random.normal(0,amp_noise,n)
-	field_u=(1/tau)*(mystim.stim(t)+is_noise*noise+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
+	noise=np.random.normal(0,1.,n)
+	field_u=(1/tau)*(mystim.stim(t)+amp_noise*is_noise*noise*np.sqrt(tau/dt)+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
 	field_a=0.#in the paper we are not using adaptation during learning
 	field_H=(H*(1.-(post_u/y0))-H**2)/tau_H
 	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
@@ -78,7 +78,7 @@ dt=0.5
 lagStim=100.
 times=135
 amp=5.8
-amp_noise=1.
+amp_noise=0.2
 is_noise=1.
 
 delta=13.5
