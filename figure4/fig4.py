@@ -31,14 +31,14 @@ def winf(x_hist):
 	post_u=x_hist[-1]
 	#parameters
 	n=len(pre_u)
-	return (wmax/4.)*np.outer((np.ones(n)+np.tanh(a_post*post_u+b_post)),(np.ones(n)+np.tanh(a_pre*pre_u+b_pre)))
+	return (wmax/4.)*np.outer((np.ones(n)+np.tanh(a_post*(post_u-b_post))),(np.ones(n)+np.tanh(a_pre*(pre_u-b_pre))))
 
 #function for the field
 #x_hist is the 'historic' of the x during the delay period the zero is the oldest and the -1 is the newest
 
 def tauWinv(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
 	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
 	return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
 
@@ -58,44 +58,45 @@ def field(t,x_hist,W):
 n=10 #n pop
 delay=15.3 #multilpl:es of 9!
 tau=10.   #timescale of populations
-w_i=1.
+w_i=1.#5.
 nu=1.
 theta=0.
 uc=1.
-wmax=3.5
-thres=0.9
+wmax=2.5
+thres=0.6
 #parameters stimulation
 dt=0.5
 lagStim=100.
 
 
-amp=20.
+amp=10.
+amp_dc=0.
 delta=15.3
 period=40.
-times=80
+times=240
 
-a_post=1.
-b_post=-2.3
-a_pre=1.
-b_pre=-2.3
+bf=10.
+xf=0.7
+
+a_post=bf
+b_post=xf
+a_pre=bf
+b_pre=xf
 tau_learning=400.
 
-a1=6.
-b1=-0.25
 
 w_inh=w_i/n
 r1_matrix=np.ones((n,n))
 patterns=np.identity(n)
 patterns=[patterns[:,i] for i in range(n)]
 mystim=stimulus(patterns,lagStim,delta,period,times)
-mystim.inten=amp
-
 #integrato
 npts=int(np.floor(delay/dt)+1)         # points delay
 tmax=times*(lagStim+n*(period+delta))+40
 
 #initial conditions
 x0=0.01*np.ones((npts,n))
+
 W0=[(0.1)*np.zeros((n,n)) for i in range(npts)]
 theintegrator=myintegrator(delay,dt,n,tmax)
 theintegrator.fast=False
@@ -110,12 +111,13 @@ plt.rcParams.update(**rc)
 #-------------------------------------------------------------
 #-------------------stimulation instability-------------------
 #------------------------------------------------------------
-amp=8.847
-delta=5.
-period=25.
-times=20
+amp=1.3
+delta=10.
+period=19.
+times=40
 mystim=stimulus(patterns,lagStim,delta,period,times)
-mystim.inten=amp
+mystim.inten=amp-amp_dc
+mystim.amp_dc=amp_dc
 tmax=times*(lagStim+n*(period+delta))+40
 #initial conditions
 x0=0.01*np.ones((npts,n))
@@ -153,7 +155,7 @@ elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-time_plot=3*(lagStim+n*(period+delta))
+time_plot=14*(lagStim+n*(period+delta))
 plt.xlim([time_plot,time_plot+400])
 plt.xticks([time_plot,time_plot+200,time_plot+400])
 plt.yticks([0,0.4,0.8,1.2])
@@ -171,7 +173,7 @@ elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-time_plot=8*(lagStim+n*(period+delta))
+time_plot=18*(lagStim+n*(period+delta))
 plt.xlim([time_plot,time_plot+400])
 plt.xticks([time_plot,time_plot+200,time_plot+400])
 plt.yticks([0,0.4,0.8,1.2])
@@ -212,8 +214,8 @@ for i in range(9):
 		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,6000])
-plt.xticks([0,1000,2000,3000,4000,5000,6000],[0,1,2,3,4,5,6])
+plt.xlim([0,15000])
+plt.xticks([0,5000,10000,15000],[0,5,10,15])
 plt.yticks([0,1.,2.,3.])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
@@ -226,7 +228,7 @@ print 'connectivitystimulation.pdf is stored'
 
 print t[int(2000./0.5)]
 
-data=[connectivity[0,:,:],connectivity[int(2000./dt),:,:],connectivity[int(4000./dt),:,:],connectivity[int(6000./dt),:,:]]
+data=[connectivity[0,:,:],connectivity[int(3000./dt),:,:],connectivity[int(6000./dt),:,:],connectivity[int(9000./dt),:,:]]
 fig, axes = plt.subplots(nrows=2, ncols=2)
 for dat, ax in zip(data, axes.flat):
 	    # The vmin and vmax arguments specify the color limit
