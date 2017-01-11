@@ -104,7 +104,7 @@ def rk4(f,y0,dt,T):
 
 n=10
 k=1
-w_i=1.0
+w_i=2.0
 w_inh=w_i/n
 nu=1.
 nu_brunel=0.4*nu
@@ -143,8 +143,8 @@ plt.rcParams.update(**rc)
 #Full Bifurcation Diagram
 #-----------------------------------------
 
-mys=np.linspace(0,1.5,100)
-myw=np.linspace(0,1.5,100)
+mys=np.linspace(0,2.,100)
+myw=np.linspace(0,2.,100)
 upperBsequences=np.array([1+w_i*(1+0.)/n for j in range(0,len(bifcurve[:,1]))])
 
 plt.plot(bifcurve[:,0],bifcurve[:,1],'k')
@@ -164,8 +164,10 @@ for i in range(1,n):
 		myconstant1=np.array([1+w_i*(i+0.)/n for l in range(0,100)])
 		plt.fill_between(myline2,myconstant1,myconstant1+w_i/n,alpha=alph,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 	alph=alph+(0.95-0.15)/9
+
+smax=2. # the upper bound for s
 for i in range(1,n):
-	myline1=np.linspace(w_i*(i+0.)/n,1,100)
+	myline1=np.linspace(w_i*(i+0.)/n,smax,100)
 	myconstant1=np.array([1+w_i*(i+0.)/n for l in range(0,100)])
 	plt.fill_between(myline1,myconstant1,myconstant1+w_i/n,alpha=0.1*i,edgecolor='grey', facecolor='green')
 
@@ -178,43 +180,24 @@ for j in range(0,n):
 	plt.fill_between(myline2,myconstant1,myconstant2,alpha=1.,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 
 
-plt.xlim([0.,1.])
-plt.ylim([0,2.1])
+plt.xlim([0.,2.])
+plt.ylim([0,2])
 #plt.yticks([1.5,1.6,1.7])
 #plt.xticks([0.4,0.5,0.6])
 plt.xlabel(r'$s$',fontsize='28')
 plt.ylabel(r'$w$',fontsize='28')
 plt.savefig('bifurcationdiagram.pdf', bbox_inches='tight')
 
-plt.xlim([0.1,0.4])
-plt.ylim([1.,1.3])
-plt.yticks([1.,1.1,1.2,1.3],fontsize=35)
-plt.xticks([0.1,0.2,0.3,0.4],fontsize=35)
-plt.xlabel(r'$s$',fontsize='50')
-plt.ylabel(r'$w$',fontsize='50')
-plt.savefig('bifurcationdiagramZoom1.pdf', bbox_inches='tight')
-
-plt.xlim([0.4,0.6])
-plt.ylim([1.5,1.7])
-plt.yticks([1.5,1.6,1.7],fontsize=35)
-plt.xticks([0.4,0.5,0.6],fontsize=35)
-plt.xlabel(r'$s$',fontsize='50')
-plt.ylabel(r'$w$',fontsize='50')
-plt.savefig('bifurcationdiagramZoom2.pdf', bbox_inches='tight')
-
-
 print 'bifurcationdiagram.pdf stored'
-print 'bifurcationdiagramZoom1.pdf stored'
-print 'bifurcationdiagramZoom3.pdf stored'
 
 
 #---------------------------------------
 # Dynamics DNS 
 #---------------------------------------
 
-tsim=100.
-s=0.2
-w=1.05
+tsim=15.
+s=1.5
+w=0.2
 sdelmin=s
 sdelmax=s
 wmaxmax=w
@@ -238,6 +221,7 @@ plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 dynamics.plot(10.*np.array(timepw_true1),phi(ypw_true1[:,0:n],theta,uc),lw=2)
 #dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
 dynamics.set_yticks([0,0.4,0.8,1.2])
+dynamics.set_xticks([0,50,100,150])
 dynamics.set_xlim([0,10*tsim])
 dynamics.set_ylim([0,1.2])
 dynamics.set_xlabel('Time (ms)')
@@ -261,8 +245,8 @@ print 'DNS.pdf stored'
 # Dynamics NS
 #-----------------------------------------
 
-tsim=100.
-s=0.39
+tsim=40.
+s=1.39
 w=1.01
 sdelmin=s
 sdelmax=s
@@ -311,9 +295,9 @@ print 'NS.pdf stored'
 # Dynamics NS ends in Fixed Point 1 Neuron Hight Rate 
 #------------------------------------------------------
 
-tsim=100.
-s=0.35
-w=1.15
+tsim=60.
+s=1.
+w=1.3
 sdelmin=s
 sdelmax=s
 wmaxmax=w
@@ -352,58 +336,10 @@ plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 #dynamics2.set_yticks([0,0.4,0.8,1.2])
 #dynamics2.set_xlabel('Time (ms)')
 #dynamics2.set_ylabel('Rate')
-plt.savefig('NStoFP1.pdf', bbox_inches='tight')
-print 'NStoFP1.pdf stored'
+plt.savefig('NStoPA1.pdf', bbox_inches='tight')
+print 'NStoPA1.pdf stored'
 #plt.show()
 
-#------------------------------------------------------
-# Dynamics NS ends in Fixed Point 2 Neuron Hight Rate 
-#------------------------------------------------------
-
-tsim=100.
-s=0.35
-w=1.25
-sdelmin=s
-sdelmax=s
-wmaxmax=w
-wmaxmin=w
-sdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-
-y0_true=1.*np.zeros(n+1)
-y0_true[0]=1.
-ypw_true1,timepw_true1=rk4(field_true_pw,y0_true,0.1,tsim)
-y0_true=1.*np.ones(n+1)
-y0_true[-1]=0.
-ypw_true2,timepw_true2=rk4(field_true_pw,y0_true,0.1,tsim)
-
-figure=plt.figure()
-colormap = plt.cm.Accent
-#dynamics
-#dynamics=figure.add_subplot(211)
-dynamics=figure.add_subplot(111)
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-dynamics.plot(10.*np.array(timepw_true1),phi(ypw_true1[:,0:n],theta,uc),lw=2)
-#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
-dynamics.set_yticks([0,0.4,0.8,1.2])
-dynamics.set_xlim([0,10*tsim])
-dynamics.set_ylim([0,1.2])
-dynamics.set_xlabel('Time (ms)')
-dynamics.set_ylabel('Rate')
-
-
-#dynamics
-#dynamics2=figure.add_subplot(212)
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#dynamics2.plot(10.*np.array(timepw_true2),phi(ypw_true2[:,0:n],theta,uc),lw=2.)
-#dynamics2.set_xlim([0,10*tsim])
-#dynamics2.set_ylim([0,1.2])
-#dynamics2.set_yticks([0,0.4,0.8,1.2])
-#dynamics2.set_xlabel('Time (ms)')
-#dynamics2.set_ylabel('Rate')
-plt.savefig('NStoFP2.pdf', bbox_inches='tight')
-print 'NStoFP2.pdf stored'
-#plt.show()
 
 #---------------------------------------------------------------------------
 # Dynamics of  Fixed Point with at least and at most 2 Neurons in Hight Rate
@@ -412,7 +348,7 @@ print 'NStoFP2.pdf stored'
 
 tsim=20.
 s=0.15
-w=1.25
+w=1.3
 sdelmin=s
 sdelmax=s
 wmaxmax=w
@@ -451,9 +387,9 @@ dynamics.set_ylabel('Rate')
 #dynamics2.set_yticks([0,0.4,0.8,1.2])
 #dynamics2.set_xlabel('Time (ms)')
 #dynamics2.set_ylabel('Rate')
-plt.savefig('FP22.pdf', bbox_inches='tight')
+plt.savefig('PA1_1.pdf', bbox_inches='tight')
 #plt.show()
-print 'FP22.pdf stored'
+print 'PA1_1.pdf stored'
 
 #------------------------------------------------------------------
 # Dynamics At Least and At Most Fixed Point 5 Neurons in Hight Rate
@@ -461,8 +397,8 @@ print 'FP22.pdf stored'
 
 
 tsim=20.
-s=0.45
-w=1.55
+s=0.7
+w=1.9
 sdelmin=s
 sdelmax=s
 wmaxmax=w
@@ -501,165 +437,12 @@ dynamics.set_ylabel('Rate')
 #dynamics2.set_yticks([0,0.4,0.8,1.2])
 #dynamics2.set_xlabel('Time (ms)')
 #dynamics2.set_ylabel('Rate')
-plt.savefig('FP55.pdf', bbox_inches='tight')
+plt.savefig('PA4_4.pdf', bbox_inches='tight')
 #plt.show()
 
-print 'FP55.pdf stored'
+print 'PA4_4.pdf stored'
 
 
-#------------------------------------------------------------------
-# Dynamics At Least 5 and At Most Fixed Point 6 Neurons in Hight Rate
-#------------------------------------------------------------------
-
-
-tsim=20.
-s=0.45
-w=1.65
-sdelmin=s
-sdelmax=s
-wmaxmax=w
-wmaxmin=w
-sdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-
-y0_true=1.*np.zeros(n+1)
-y0_true[0]=1.
-ypw_true1,timepw_true1=rk4(field_true_pw,y0_true,0.1,tsim)
-y0_true=1.*np.ones(n+1)
-y0_true[-1]=0.
-ypw_true2,timepw_true2=rk4(field_true_pw,y0_true,0.1,tsim)
-
-figure=plt.figure()
-colormap = plt.cm.Accent
-#dynamics
-#dynamics=figure.add_subplot(211)
-dynamics=figure.add_subplot(111)
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-dynamics.plot(10.*np.array(timepw_true1),phi(ypw_true1[:,0:n],theta,uc),lw=2)
-#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
-dynamics.set_yticks([0,0.4,0.8,1.2])
-dynamics.set_xlim([0,10*tsim])
-dynamics.set_ylim([0,1.2])
-dynamics.set_xlabel('Time (ms)')
-dynamics.set_ylabel('Rate')
-
-
-#dynamics
-#dynamics2=figure.add_subplot(212)
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#dynamics2.plot(10.*np.array(timepw_true2),phi(ypw_true2[:,0:n],theta,uc),lw=2.)
-#dynamics2.set_xlim([0,10*tsim])
-#dynamics2.set_ylim([0,1.2])
-#dynamics2.set_yticks([0,0.4,0.8,1.2])
-#dynamics2.set_xlabel('Time (ms)')
-#dynamics2.set_ylabel('Rate')
-plt.savefig('FP56.pdf', bbox_inches='tight')
-#plt.show()
-
-print 'FP56.pdf stored'
-
-
-#------------------------------------------------------------------
-# Dynamics At Least and At Most Fixed Point 6 Neurons in Hight Rate
-#------------------------------------------------------------------
-
-
-tsim=20.
-s=0.55
-w=1.65
-sdelmin=s
-sdelmax=s
-wmaxmax=w
-wmaxmin=w
-sdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-
-y0_true=1.*np.zeros(n+1)
-y0_true[0]=1.
-ypw_true1,timepw_true1=rk4(field_true_pw,y0_true,0.1,tsim)
-y0_true=1.*np.ones(n+1)
-y0_true[-1]=0.
-ypw_true2,timepw_true2=rk4(field_true_pw,y0_true,0.1,tsim)
-
-figure=plt.figure()
-colormap = plt.cm.Accent
-#dynamics
-#dynamics=figure.add_subplot(211)
-dynamics=figure.add_subplot(111)
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-dynamics.plot(10.*np.array(timepw_true1),phi(ypw_true1[:,0:n],theta,uc),lw=2)
-#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
-dynamics.set_yticks([0,0.4,0.8,1.2])
-dynamics.set_xlim([0,10*tsim])
-dynamics.set_ylim([0,1.2])
-dynamics.set_xlabel('Time (ms)')
-dynamics.set_ylabel('Rate')
-
-
-#dynamics
-#dynamics2=figure.add_subplot(212)
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#dynamics2.plot(10.*np.array(timepw_true2),phi(ypw_true2[:,0:n],theta,uc),lw=2.)
-#dynamics2.set_xlim([0,10*tsim])
-#dynamics2.set_ylim([0,1.2])
-#dynamics2.set_yticks([0,0.4,0.8,1.2])
-#dynamics2.set_xlabel('Time (ms)')
-#dynamics2.set_ylabel('Rate')
-plt.savefig('FP66.pdf', bbox_inches='tight')
-#plt.show()
-
-print 'FP66.pdf stored'
-
-#------------------------------------------------------------------
-# NS to 6  Neurons in Hight Rate
-#------------------------------------------------------------------
-
-
-tsim=100.
-s=0.55
-w=1.55
-sdelmin=s
-sdelmax=s
-wmaxmax=w
-wmaxmin=w
-sdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-
-y0_true=1.*np.zeros(n+1)
-y0_true[0]=1.
-ypw_true1,timepw_true1=rk4(field_true_pw,y0_true,0.1,tsim)
-y0_true=1.*np.ones(n+1)
-y0_true[-1]=0.
-ypw_true2,timepw_true2=rk4(field_true_pw,y0_true,0.1,tsim)
-
-figure=plt.figure()
-colormap = plt.cm.Accent
-#dynamics
-#dynamics=figure.add_subplot(211)
-dynamics=figure.add_subplot(111)
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-dynamics.plot(10.*np.array(timepw_true1),phi(ypw_true1[:,0:n],theta,uc),lw=2)
-#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
-dynamics.set_yticks([0,0.4,0.8,1.2])
-dynamics.set_xlim([0,10*tsim])
-dynamics.set_ylim([0,1.2])
-dynamics.set_xlabel('Time (ms)')
-dynamics.set_ylabel('Rate')
-
-
-#dynamics
-#dynamics2=figure.add_subplot(212)
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#dynamics2.plot(10.*np.array(timepw_true2),phi(ypw_true2[:,0:n],theta,uc),lw=2.)
-#dynamics2.set_xlim([0,10*tsim])
-#dynamics2.set_ylim([0,1.2])
-#dynamics2.set_yticks([0,0.4,0.8,1.2])
-#dynamics2.set_xlabel('Time (ms)')
-#dynamics2.set_ylabel('Rate')
-plt.savefig('NStoFP5.pdf', bbox_inches='tight')
-#plt.show()
-
-print 'NStoFP5.pdf stored'
 
 
 
