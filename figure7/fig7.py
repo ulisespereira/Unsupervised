@@ -25,14 +25,14 @@ def mytauInv(x): #time scale function synapses
 	return myresult
 
 def winf(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
 	mynu=5.5
 	mytheta=-0.8
 	#parameters
 	n=len(pre_u)
-	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*pre_u+b_pre))
-	vec_post=0.5*(np.ones(n)+np.tanh(a_post*post_u+b_post))
+	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*(pre_u-b_pre)))
+	vec_post=0.5*(np.ones(n)+np.tanh(a_post*(post_u-b_post)))
 	#return (wmax/2.)*np.outer((np.ones(n)+np.tanh(a_post*post_u+b_post)),vec_pre)
 	return wmax*np.outer(vec_post,vec_pre)
 
@@ -46,7 +46,13 @@ def tauWinv(x_hist):
 	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
 	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
 def F(u):
-	return np.sqrt(wmax)*.5*(1.+np.tanh(a_post*u+b_post))
+	if theta<=u and u<=uc:
+		r=nu*(u-theta)
+	elif u<=theta:
+		r=0
+	elif uc<=u:
+		r=nu*(uc-theta)
+	return np.sqrt(wmax)*.5*(1.+np.tanh(a_post*(r-b_post)))
 
 def field(t,a,x_hist,W,H):
 	pre_u=x_hist[0]
@@ -55,7 +61,7 @@ def field(t,a,x_hist,W,H):
 	conn_matrix=(W.T*H).T
 	field_u=(1/tau)*(mystim.stim(t)+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
 	field_a=0.#in the paper we are not using adaptation during learning
-	field_H=(H*(1.-(post_u/y0))-H**2)/tau_H
+	field_H=(H*(1.-(phi(post_u,theta,uc)/y0))-H**2)/tau_H
 	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
 	return field_a,field_u,field_w,field_H
 
@@ -66,29 +72,30 @@ n=20 #n pop
 delay=15.3
 tau=10.   #timescale of populations
 tau_H=10000.
-y0=.12*np.ones(n)
+y0=.01*np.ones(n)
 w_i=1.
 w_inh=w_i/n
 nu=1.
 theta=0.
 uc=1.
 wmax=2.40
-thres=0.9
+thres=0.6
 beta=1.6
 tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=100.
 times=1
-amp=5.
+amp=1.5
 
 
 
-
-a_post=1.
-b_post=-2.25
-a_pre=1.0
-b_pre=-2.25
+bf=10.
+xf=0.7
+a_post=bf
+b_post=xf
+a_pre=bf
+b_pre=xf
 tau_learning=400.
 
 a1=6.
@@ -102,10 +109,10 @@ b1=-0.25
 
 
 def tau_u0_theta(T):
-	return -tau*np.log(1.-(thres/amp))
+	return -tau*np.log(1.-((thres-amp_dc)/(amp-amp_dc))) #including amp_dc
 
 def tau_umax_theta(T):
-	return -tau*np.log((thres/amp)*(1./(1.-np.exp(-T/tau))))
+	return -tau*np.log(((thres-amp_dc)/((amp-amp_dc)*(1.-np.exp(-T/tau)))))
 def tau_theta(T):
 	return T-tau_u0_theta(T)+tau_umax_theta(T)
 
@@ -113,11 +120,11 @@ def tau_theta(T):
 def myu(t,T,tstart):
 	ttilda=t-tstart
 	if tau_u0_theta(T)<=ttilda and ttilda<=T:
-		return amp*(1.-np.exp(-ttilda/tau))
+		return (amp-amp_dc)*(1.-np.exp(-ttilda/tau))+amp_dc
 	elif ttilda>T:
-		return amp*(1.-np.exp(-T/tau))*np.exp(-(ttilda-T)/tau)
+		return ((amp-amp_dc)*(1.-np.exp(-T/tau))+amp_dc)*np.exp(-(ttilda-T)/tau)+amp_dc*(1.-np.exp(-(ttilda-T)/tau))
 	elif tau_u0_theta(T)>ttilda:
-		return amp*(1.-np.exp(-ttilda/tau))
+		return (amp-amp_dc)*(1.-np.exp(-ttilda/tau))+amp_dc
 	elif ttilda<0:
 		print 'holi',ttilda
 
@@ -170,15 +177,17 @@ patterns=[patterns[:,i] for i in range(n)]
 npts=int(np.floor(delay/dt)+1)         # points delay
 
 #initial conditions
+amp_dc=0.
+amp=5.
 w0=0.1
 a0=np.zeros((npts,n))
 x0=0.01*np.ones((npts,n))
 W0=[w0*np.ones((n,n)) for i in range(npts)]
-H0=[0.01*np.ones(n) for i in range(npts)]
+H0=[0.1*np.ones(n) for i in range(npts)]
 
 mystim=stimulus(patterns,lagStim,delta,period,times)
-mystim.inten=amp
-
+mystim.inten=amp-amp_dc
+mystim.amp_dc=amp_dc
 #integrator
 
 #tmax=times*(lagStim+n*(period+delta))+mystim.delay_begin
@@ -212,7 +221,7 @@ recurrentFig1.set_xticks([100,150,200])
 recurrentFig1.set_yticks([1.,2,3.,4,5.])
 recurrentFig1.set_ylim([0,5])
 recurrentFig1.set_xlim([90,210])
-recurrentFig1.set_title('(A)',size=60,fontweight='bold')
+recurrentFig1.set_title('(A)',size=60,fontweight='bold',y=1.08)
 recurrentFig1.axhline(y=0.9,xmin=0,xmax=500,linewidth=6,color='k',linestyle=':',alpha=0.8)
 
 
@@ -222,10 +231,10 @@ recurrentFig2.plot(t,theo_w,'r--',lw=6,alpha=0.8)
 recurrentFig2.set_ylabel('Synaptic Weight',size=40)
 recurrentFig2.set_xlabel('Time (ms)',size=40)
 recurrentFig2.set_xticks([100,150,200])
-recurrentFig2.set_yticks([0.1,0.2,0.3])
-recurrentFig2.set_ylim([0.1,0.3])
+recurrentFig2.set_yticks([0.1,0.2,0.3,0.4])
+recurrentFig2.set_ylim([0.1,0.4])
 recurrentFig2.set_xlim([100,200])
-recurrentFig2.set_title('(B)',size=60,fontweight='bold')
+recurrentFig2.set_title('(B)',size=60,fontweight='bold',y=1.08)
 
 #recurrentFig3=figure.add_subplot(133)
 recurrentFig2.plot(t,connectivity[:,2,1],'y',lw=7)
@@ -237,8 +246,9 @@ recurrentFig2.plot(t,theo_s,'r--',lw=6,alpha=0.8)
 #recurrentFig3.set_ylim([.1,0.16])
 #recurrentFig3.set_xlim([140,200])
 
-plt.savefig('recurrent_test.pdf', bbox_inches='tight')
-plt.show()
+#plt.suptitle(r'$I_{DC}=$'+str(amp_dc))
+plt.savefig('fig7_amp_dc_'+str(amp_dc)+'.pdf', bbox_inches='tight')
+#plt.show()
 
 
 
