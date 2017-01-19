@@ -26,14 +26,14 @@ def mytauInv(x): #time scale function synapses
 	return myresult
 
 def winf(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
 	mynu=5.5
 	mytheta=-0.8
 	#parameters
 	n=len(pre_u)
-	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*pre_u+b_pre))
-	return (wmax/2.)*np.outer((np.ones(n)+np.tanh(a_post*post_u+b_post)),vec_pre)
+	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*(pre_u-b_pre)))
+	return (wmax/2.)*np.outer((np.ones(n)+np.tanh(a_post*(post_u-b_post))),vec_pre)
 	#return (wmax/2.)*np.outer(vec_post,vec_pre)
 
 #function for the field
@@ -46,7 +46,14 @@ def tauWinv(x_hist):
 	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
 
 def F(u):
-	return np.sqrt(wmax)*.5*(1.+np.tanh(a_post*u+b_post))
+	if theta<=u and u<=uc:
+		r=nu*(u-theta)
+	elif u<=theta:
+		r=0
+	elif uc<=u:
+		r=nu*(uc-theta)
+	return np.sqrt(wmax)*.5*(1.+np.tanh(a_post*(r-b_post)))
+
 
 def field(t,a,x_hist,W,H):
 	pre_u=x_hist[0]
@@ -55,7 +62,7 @@ def field(t,a,x_hist,W,H):
 	conn_matrix=(W.T*H).T
 	field_u=(1/tau)*(mystim.stim(t)+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
 	field_a=0.#in the paper we are not using adaptation during learning
-	field_H=(H*(1.-(post_u/y0))-H**2)/tau_H
+	field_H=(H*(1.-(phi(post_u,theta,uc)/y0))-H**2)/tau_H
 	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
 	return field_a,field_u,field_w,field_H
 
@@ -76,7 +83,7 @@ w_inh=w_i/n
 nu=1.
 theta=0.
 uc=1.
-wmax=2.4
+wmax=1.8
 thres=0.9
 beta=1.6
 tau_a=10.
@@ -84,18 +91,16 @@ tau_a=10.
 dt=0.5
 lagStim=100.
 times=100
-amp=5.
+amp=5.5
 
 
-
-
-a_post=1.
-b_post=-2.25
-a_pre=1.0
-b_pre=-2.25
-a_tau=3.0
-b_tau=-2.25
-tau_learning=20000.
+bf=10.
+xf=0.7
+a_post=bf
+b_post=xf
+a_pre=bf
+b_pre=xf
+tau_learning=400.
 
 x=np.linspace(0,6,100)
 
@@ -140,7 +145,7 @@ def recurrentTheo(T,k):
 	wk=w0
 	for i in range(k):
 		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart))*np.exp((x-delay-tstart-tau_u0_theta(T))/tau_learning) 
-		myintegral=lambda y:integrate.quad(df,tstart+delay+tau_u0_theta(T),y)
+		myintegral=lambda y:integrate.quad(df,tstart+delay+tau_u0_theta(T),y,epsabs=1e-5)
 		val,err=myintegral(myt)
 		wk=np.exp(-(myt-(delay+tau_u0_theta(T)+tstart))/tau_learning)*(wk+val*(1./tau_learning))
 		wdyn.append(wk)
@@ -153,7 +158,7 @@ def feedforwardTheo(T,delta,k):
 	wk=w0
 	for i in range(k):
 		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart-delta-T))*np.exp((x-tau_u0_theta(T)-tstart)/tau_learning) 
-		myintegral=lambda y:integrate.quad(df,tau_u0_theta(T)+tstart,y)
+		myintegral=lambda y:integrate.quad(df,tau_u0_theta(T)+tstart,y,epsabs=1e-5)
 		val,err=myintegral(myt)
 		wk=np.exp(-(myt-(tstart+tau_u0_theta(T)))/tau_learning)*(wk+val*(1./tau_learning))
 		wdyn.append(wk)
@@ -177,11 +182,9 @@ W0=[w0*np.ones((n,n)) for i in range(npts)]
 H0=[0.01*np.ones(n) for i in range(npts)]
 norbits=2
 nperiod=2
-mydelta=[8.,18.]
-myT=[20.,36.]
 
 #delta_T=[[21.,9.5],[18.,15.],[23.,12.],[28.,16.]]
-delta_T=[[22.,8.5],[20.,15.],[30.,12.],[55.,20.]]
+delta_T=[[20.,8.5],[6.5,13.],[8.,14.],[50.,40.]]
 allRecurrent=[]
 allFF=[]
 allRecurrentTheo=[]
@@ -193,13 +196,15 @@ for param in delta_T:
 	valueFF=[w0]
 	mystim=stimulus(patterns,lagStim,eldelta,elT,times)
 	mystim.inten=amp
-	times=300
+	times=150
 	#integrator
 	tmax=times*(lagStim+n*(elT+eldelta))+mystim.delay_begin+5000.
 	thetmax=tmax
 	theintegrator=myintegrator(delay,dt,n,thetmax)
 	theintegrator.fast=False
-	tau_learning=400.
+	tau_learning=400.	
+	w_i=1.
+	w_inh=w_i/n
 	adapt,u,connectivity,W01,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
 	for k in range(times):
 		eltiempo=int((mystim.delay_begin+k*n*(elT+eldelta)+lagStim*(k-1)+lagStim/2.)/dt)
@@ -219,6 +224,8 @@ for param in delta_T:
 	
 	rc={'axes.labelsize': 50, 'font.size': 50, 'legend.fontsize': 50., 'axes.titlesize': 50}
 		
+	w_i=2.
+	w_inh=w_i/n
 	mystim.inten=0.
 	tau_learning=30000.
 	thetmax=5000.
@@ -235,8 +242,8 @@ for param in delta_T:
 	#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
 	dynamics.tick_params(labelsize=55)
 	dynamics.set_yticks([0,0.4,0.8,1.2])
-	dynamics.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
-	dynamics.set_xlim([0,1000])
+	dynamics.set_xticks([0,100,200,300,400,500])
+	dynamics.set_xlim([0,500])
 	dynamics.set_ylim([0,1.2])
 	dynamics.set_xlabel('Time (ms)',fontsize=75)
 	dynamics.set_ylabel('Rate',fontsize=75)
@@ -280,10 +287,10 @@ for param in delta_T:
 	dynamicszoom=figure2.add_subplot(111)
 	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 	dynamicszoom.plot(t1,phi(u1,theta,uc),lw=6)
-	dynamicszoom.set_xlim([0,400])
+	dynamicszoom.set_xlim([0,300])
 	dynamicszoom.set_ylim([0,1.2])
 	dynamicszoom.tick_params(labelsize=70)
-	dynamicszoom.set_xticks([0,100,200,300,400])
+	dynamicszoom.set_xticks([0,100,200,300])
 	dynamicszoom.set_yticks([0,0.4,0.8,1.2])
 	dynamicszoom.set_xlabel('Time (ms)',fontsize=80)
 	dynamicszoom.set_ylabel('Rate',fontsize=80)
@@ -294,8 +301,8 @@ for param in delta_T:
 	print('------------------------------------------------')
 	print 'Orbit with delta',eldelta,elT
 	tau_learning=400.
-	allRecurrentTheo.append(recurrentTheo(elT,500))
-	allFFTheo.append(feedforwardTheo(elT,eldelta,500))
+	allRecurrentTheo.append(recurrentTheo(elT,100))
+	allFFTheo.append(feedforwardTheo(elT,eldelta,100))
 	allRecurrent.append(valueRecurrent)
 	allFF.append(valueFF)
 
@@ -319,10 +326,9 @@ rc={'axes.labelsize': 30, 'font.size': 22, 'legend.fontsize': 28.0, 'axes.titles
 
 
 bifcurve=np.load('mybifcurve.npy')
-mys=np.linspace(0,1.5,100)
-myw=np.linspace(0,1.5,100)
+mys=np.linspace(0,2.0,100)
+myw=np.linspace(0,2.0,100)
 
-bigS=np.linspace(0.1,1.,100)
 colormap = plt.cm.afmhot
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 
@@ -359,12 +365,12 @@ for i in range(1,n):
 		plt.fill_between(myline2,myconstant1,myconstant1+w_i/n,alpha=alph,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 	alph=alph+(0.95-0.15)/9
 for i in range(1,n):
-	myline1=np.linspace(w_i*(i+0.)/n,1,100)
+	myline1=np.linspace(w_i*(i+0.)/n,2.,100)
 	myconstant1=np.array([1+w_i*(i+0.)/n for l in range(0,100)])
 	plt.fill_between(myline1,myconstant1,myconstant1+w_i/n,alpha=0.1*i,edgecolor='grey', facecolor='green')
 
 myconstant1=np.array([2. for j in range(0,100)])
-myconstant2=np.array([2.1 for j in range(0,100)])
+myconstant2=np.array([2. for j in range(0,100)])
 
 alph=0.15
 for j in range(0,n):
@@ -372,14 +378,14 @@ for j in range(0,n):
 	plt.fill_between(myline2,myconstant1,myconstant2,alpha=1.,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 
 
-plt.xlim([0.,1.])
-plt.ylim([0,2.1])
+plt.xlim([0.,2.])
+plt.ylim([0,2.])
 plt.yticks([0.5,1,1.5,2],fontsize='30')
-plt.xticks([0,0.5,1],fontsize='30')
+plt.xticks([0,1.,2.],fontsize='30')
 plt.xlabel(r'$s$',fontsize='35')
 plt.ylabel(r'$w$',fontsize='35')
 plt.savefig('bifdiagramTvsDel1.pdf', bbox_inches='tight')
-plt.show()
+#plt.show()
 
 
 
