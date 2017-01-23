@@ -10,7 +10,7 @@ tau_H=100.#10000
 WI=0.1
 a1=2.
 b1=-1.5
-y0=0.07
+y0=0.005
 w=0.5
 
 def phi_tanh(x):
@@ -20,18 +20,18 @@ def nullcline_u(u):
 	return u/(w*phi_tanh(u))+WI/w
 
 def nullcline_H_Amended(u):
-	return 1.-u/y0
+	return 1.-phi_tanh(u)/y0
 
 
 def fieldSimpleModel(x,t):
 	field_u=(1/tau)*(-x[0]+w*x[1]*phi_tanh(x[0])-WI*phi_tanh(x[0]))
-	field_H=x[1]*(1.-(x[0]/y0))/tau_H
+	field_H=x[1]*(1.-(phi_tanh(x[0])/y0))/tau_H
 	return np.array([field_u,field_H])
 
 
 def fieldSimpleModelAmended(x,t):
 	field_u=(1/tau)*(-x[0]+w*x[1]*phi_tanh(x[0])-WI*phi_tanh(x[0]))
-	field_H=(x[1]*(1.-(x[0]/y0))-x[1]*x[1])/tau_H
+	field_H=(x[1]*(1.-(phi_tanh(x[0])/y0))-x[1]*x[1])/tau_H
 	return np.array([field_u,field_H])
 
 umin=-0.1
@@ -39,28 +39,33 @@ umax=2
 Hmin=0.1
 Hmax=75
 u_null=np.linspace(umin,umax,500)
+
+
 #----------------------------------------------------------------------
 #-------------------- Model--------------------------------------------
 #----------------------------------------------------------------------
-plt.axvline(y0, color='red',lw=3)
+
+ustar=np.arctanh(2*y0-1)/a1-b1
+plt.axvline(ustar, color='red',lw=3)
+
 w=0.5
 plt.plot(u_null,nullcline_u(u_null),color='g',lw=3,label=r'$w=0.5$')
-Hstar_0_5=nullcline_u(y0)
-plt.plot(y0,Hstar_0_5,'og',markersize=12,alpha=0.9)
-myh0=np.linspace(Hstar_0_5*2.,Hstar_0_5*2,1)
+Hstar_0_5=nullcline_u(ustar)
+plt.plot(ustar,Hstar_0_5,'og',markersize=12,alpha=0.9)
+myh0=np.linspace(Hstar_0_5*0.9,Hstar_0_5*0.9,1)
 for H0 in myh0: 
 	x0=np.array([0.5,H0])
-	t = np.linspace(0, 1e3, 1e4)
+	t = np.linspace(0, 1e5, 1e6)
 	sol = odeint(fieldSimpleModel,x0,t)
 	plt.plot(sol[:,0],sol[:,1],':k',alpha=.5,lw=6)
-w=1.2
+w=2.2
 plt.plot(u_null,nullcline_u(u_null),color='m',lw=3,label=r'$w=1.2$')
-Hstar_1_2=nullcline_u(y0)
-plt.plot(y0,Hstar_1_2,'om',markersize=12,alpha=0.9)
-myh0=np.linspace(Hstar_1_2*2.,Hstar_1_2*2,1)
+Hstar_1_2=nullcline_u(ustar)
+plt.plot(ustar,Hstar_1_2,'om',markersize=12,alpha=0.9)
+myh0=np.linspace(Hstar_1_2*0.9,Hstar_1_2*0.9,1)
 for H0 in myh0: 
 	x0=np.array([0.5,H0])
-	t = np.linspace(0, 1e3, 1e4)
+	t = np.linspace(0, 1e5, 1e6)
 	sol = odeint(fieldSimpleModel,x0,t)
 	plt.plot(sol[:,0],sol[:,1],'--k',alpha=.5,lw=6)
 
@@ -132,17 +137,18 @@ for thew in myw:
 	w=thew
 	solAmmended=root(fieldSimpleModelAmended,np.array([0.01,.8]),args=(0))
 	myHAmended.append(solAmmended.x[1])
-	myH.append(nullcline_u(y0))
+	myH.append(nullcline_u(ustar))
 #	print i,solAmmended.x[1]
 	i=i+1
 
 plt.plot(myw,np.array(myHAmended),color='b',lw=4)
 plt.plot(myw,myH,lw=4,color='orange')
+plt.yscale('log')
 plt.xlim([0.1,1])
 plt.xlabel(r'$w$',size=40)
 plt.ylabel(r'$H^*$',size=40)
 plt.xticks([0.1,0.5,1],size=30)
-plt.yticks([0,100,200],size=30)
+plt.yticks([0.1,1,10,100,1000],size=30)
 plt.savefig('Hvsw.pdf', bbox_inches='tight',transparent=True)
 plt.ylim([0.0,1.5])
 plt.yticks([0,0.5,1.,1.5],size=30)
