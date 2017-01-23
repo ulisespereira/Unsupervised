@@ -75,12 +75,12 @@ tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=400.
-times=135
-amp=1.5
+times=235
+amp=3.5
 
 
-delta=12.
-period=21.
+delta=7.
+period=14.
 
 bf=10.
 xf=0.7
@@ -154,8 +154,8 @@ elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 plt.ylim([0,1.2])
-plt.xlim([4400,4800])
-plt.xticks([4400,4600,4800])
+plt.xlim([4200,4600])
+plt.xticks([4200,4400,4600])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
@@ -172,8 +172,9 @@ mystim.inten=.1
 elstim=np.array([sum(mystim.stim(x)) for x in t])
 plt.plot(t,elstim,'k',lw=3)
 plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.xlim([46000,46400])
-plt.xticks([46000,46200,46400])
+
+plt.xlim([45700,46100])
+plt.xticks([45700,45900,46100])
 plt.ylim([0,1.2])
 plt.yticks([0,0.4,0.8,1.2])
 plt.xlabel('Time (ms)')
@@ -207,17 +208,17 @@ print (wmax/4.)*(1.+np.tanh(a_pre*amp+b_pre))*(1.+np.tanh(a_post*amp+b_post))*(1
 print (wmax/4.)*(1.+np.tanh(a_pre*amp+b_pre))*(1.+np.tanh(a_post*amp+b_post))*(1.-np.exp(-10./tau_learning))
 print wmax*(1.-np.exp(-5./tau_learning))
 #plt.axhline(xmin=min(t),xmax=max(t),y=(wmax/4.)*(1.+np.tanh(a_post*(2.-np.exp(-period/tau))*amp+b_post))*(1+np.tanh(a_pre*amp*(1-np.exp(-period/tau))+b_pre)),linewidth=2,color='m',ls='dashed')
-plt.xlim([0,120000])
-plt.xticks([0,40000,80000,120000],[0,40,80,120])
-plt.ylim([0,1.5])
-plt.yticks([0,0.5,1.,1.5])
+#plt.xlim([0,120000])
+plt.xticks([0,50000,100000,150000],[0,50,100,150])
+plt.ylim([0,2.])
+plt.yticks([0,1.,2.])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationH.pdf', bbox_inches='tight')
 plt.xlim([0,50000])
 plt.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-plt.ylim([0,1.5])
-plt.yticks([0,0.5,1.,1.5])
+plt.ylim([0,2.])
+plt.yticks([0,1.,2.])
 plt.xlabel('Time (s)')
 plt.ylabel('Synaptic Weights')
 plt.savefig('connectivitystimulationHzoom.pdf', bbox_inches='tight')
@@ -255,12 +256,13 @@ print 'HdynamicsLearningzoom.pdf',' is saved'
 #-----------The Connectivity Matrices--------------------------------------------
 #--------------------------------------------------------------------------------
 
+vmax=2.
 # connectivity matrix during the stimulation
 data=[connectivity[0,:,:],connectivity[int((tmax/dt)/3.),:,:],connectivity[int(2*(tmax/dt)/3.),:,:],connectivity[int(tmax/dt),:,:]]
 fig, axes = plt.subplots(nrows=2, ncols=2)
 for dat, ax in zip(data, axes.flat):
 	    # The vmin and vmax arguments specify the color limit
-	im = ax.matshow(dat, vmin=0, vmax=1.5)
+	im = ax.matshow(dat, vmin=0, vmax=vmax)
 	# Make an axis for the colorbar on the right side
 #cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
 #fig.colorbar(im, cax=cax)
@@ -269,13 +271,12 @@ print 'matrixstimulationH.pdf',' is saved'
 #plt.show()
 plt.close()
 
-
 #matrix connectivity and homoestatic variable during stimulation
 data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [0,int((tmax/dt)/3.),int((tmax/dt)*2./3.),int(tmax/dt)] ]
 fig, axes = plt.subplots(nrows=2, ncols=2)
 for dat, ax in zip(data, axes.flat):
 	    # The vmin and vmax arguments specify the color limit
-	im = ax.matshow(dat, vmin=0, vmax=1.5)
+	im = ax.matshow(dat, vmin=0, vmax=vmax)
 	# Make an axis for the colorbar on the right side
 #cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
 #fig.colorbar(im, cax=cax)
@@ -289,7 +290,7 @@ data=[connectivity[int(tmax/dt),:,:],connectivity[int(tmax/dt+((thetmax-tmax)/dt
 fig, axes = plt.subplots(nrows=2, ncols=2)
 for dat, ax in zip(data, axes.flat):
 	    # The vmin and vmax arguments specify the color limit
-	im = ax.matshow(dat, vmin=0, vmax=1.5)
+	im = ax.matshow(dat, vmin=0, vmax=vmax)
 	# Make an axis for the colorbar on the right side
 #cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
 #fig.colorbar(im, cax=cax)
@@ -303,10 +304,10 @@ data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for 
 fig, axes = plt.subplots(nrows=2, ncols=2)
 for dat, ax in zip(data, axes.flat):
 	    # The vmin and vmax arguments specify the color limit
-	im = ax.matshow(dat, vmin=0, vmax=1.5)
+	im = ax.matshow(dat, vmin=0, vmax=vmax)
 	# Make an axis for the colorbar on the right side
 cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-fig.colorbar(im, cax=cax,ticks=[0,0.5,1.,1.5])
+fig.colorbar(im, cax=cax,ticks=[0,1.,2.])
 plt.savefig('matrixstimulationHhomFinal.pdf', bbox_inches='tight')
 print 'matrixstimulationHhomFinal.pdf',' is saved'
 #plt.show()
