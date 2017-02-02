@@ -84,7 +84,7 @@ nu=1.
 theta=0.
 uc=1.
 wmax=1.8
-thres=0.9
+thres=0.6
 beta=1.6
 tau_a=10.
 #parameters stimulation
@@ -184,7 +184,7 @@ norbits=2
 nperiod=2
 
 #delta_T=[[21.,9.5],[18.,15.],[23.,12.],[28.,16.]]
-delta_T=[[20.,8.5],[6.5,13.],[8.,14.],[50.,40.]]
+delta_T=[[20.,8.5],[5.,13.],[7.,14.],[50.,40.]]
 allRecurrent=[]
 allFF=[]
 allRecurrentTheo=[]
@@ -224,7 +224,7 @@ for param in delta_T:
 	
 	rc={'axes.labelsize': 50, 'font.size': 50, 'legend.fontsize': 50., 'axes.titlesize': 50}
 		
-	w_i=2.
+	w_i=1.
 	w_inh=w_i/n
 	mystim.inten=0.
 	tau_learning=30000.
@@ -305,7 +305,7 @@ for param in delta_T:
 	allFFTheo.append(feedforwardTheo(elT,eldelta,100))
 	allRecurrent.append(valueRecurrent)
 	allFF.append(valueFF)
-
+#
 #the_filename1='recurrent_dynamics.dat'
 #with open(the_filename1, 'wb') as f:
 #	    pickle.dump(allRecurrent, f)
@@ -325,7 +325,7 @@ for param in delta_T:
 rc={'axes.labelsize': 30, 'font.size': 22, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
 
 
-bifcurve=np.load('mybifcurve.npy')
+bifcurve=np.load('mybifcurve2.npy')
 mys=np.linspace(0,2.0,100)
 myw=np.linspace(0,2.0,100)
 
@@ -346,10 +346,12 @@ for i in range(norbits*nperiod):
 for i in range(norbits*nperiod):
 	plt.plot(allFFTheo[i],allRecurrentTheo[i],color='r',alpha=0.7,lw=4)
 
+
 upperBsequences=np.array([1+w_i*(1+0.)/n for j in range(0,len(bifcurve[:,1]))])
 plt.plot(bifcurve[:,0],bifcurve[:,1],'k')
 plt.plot(mys,np.array([1+(w_i+0.)/n for i in range(0,100)]),c='k',lw=1)
-plt.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red')
+plt.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
+plt.fill_between(np.linspace(bifcurve[0,0],2,100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
 plt.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
 plt.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
 
@@ -386,7 +388,6 @@ plt.xlabel(r'$s$',fontsize='35')
 plt.ylabel(r'$w$',fontsize='35')
 plt.savefig('bifdiagramTvsDel1.pdf', bbox_inches='tight')
 #plt.show()
-
 
 
 
