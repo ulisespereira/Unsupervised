@@ -26,14 +26,14 @@ def mytauInv(x): #time scale function synapses
 	return myresult
 
 def winf(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
 	mynu=5.5
 	mytheta=-0.8
 	#parameters
 	n=len(pre_u)
-	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*pre_u+b_pre))
-	return (wmax/2.)*np.outer((np.ones(n)+np.tanh(a_post*post_u+b_post)),vec_pre)
+	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*(pre_u-b_pre)))
+	return (wmax/2.)*np.outer((np.ones(n)+np.tanh(a_post*(post_u-b_post))),vec_pre)
 	#return (wmax/2.)*np.outer(vec_post,vec_pre)
 
 #function for the field
@@ -46,7 +46,14 @@ def tauWinv(x_hist):
 	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
 
 def F(u):
-	return np.sqrt(wmax)*.5*(1.+np.tanh(a_post*u+b_post))
+	if theta<=u and u<=uc:
+		r=nu*(u-theta)
+	elif u<=theta:
+		r=0
+	elif uc<=u:
+		r=nu*(uc-theta)
+	return np.sqrt(wmax)*.5*(1.+np.tanh(a_post*(r-b_post)))
+
 
 def field(t,a,x_hist,W,H):
 	pre_u=x_hist[0]
@@ -56,10 +63,9 @@ def field(t,a,x_hist,W,H):
 	noise=np.random.normal(0,1,n)
 	field_u=(1/tau)*(mystim.stim(t)+amp_noise*noise*np.sqrt(tau/dt)+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
 	field_a=0.#in the paper we are not using adaptation during learning
-	field_H=(H*(1.-(post_u/y0))-H**2)/tau_H
+	field_H=(H*(1.-(phi(post_u,theta,uc)/y0))-H**2)/tau_H
 	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
 	return field_a,field_u,field_w,field_H
-
 
 #This are a the parameters of the simulation
 #This are a the parameters of the simulation
@@ -77,26 +83,25 @@ w_inh=w_i/n
 nu=1.
 theta=0.
 uc=1.
-wmax=2.4
-thres=0.9
+wmax=1.8
+thres=0.6
 beta=1.6
 tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=100.
 times=100
-amp=5.
+amp=5.5
 amp_noise=0.2
 
+bf=10.
+xf=0.7
+a_post=bf
+b_post=xf
+a_pre=bf
+b_pre=xf
+tau_learning=400.
 
-
-a_post=1.
-b_post=-2.25
-a_pre=1.0
-b_pre=-2.25
-a_tau=3.0
-b_tau=-2.25
-tau_learning=20000.
 
 x=np.linspace(0,6,100)
 
@@ -181,8 +186,7 @@ nperiod=2
 mydelta=[8.,18.]
 myT=[20.,36.]
 
-#delta_T=[[21.,9.5],[18.,15.],[23.,12.],[28.,16.]]
-delta_T=[[22.,8.5],[20.,15.],[30.,12.],[55.,20.]]
+delta_T=[[20.,8.5],[5.,13.],[7.,14.],[50.,40.]]
 allRecurrent=[]
 allFF=[]
 allRecurrentTheo=[]
@@ -194,12 +198,14 @@ for param in delta_T:
 	valueFF=[w0]
 	mystim=stimulus(patterns,lagStim,eldelta,elT,times)
 	mystim.inten=amp
-	times=300
+	times=150
 	#integrator
 	tmax=times*(lagStim+n*(elT+eldelta))+mystim.delay_begin+5000.
 	thetmax=tmax
 	theintegrator=myintegrator(delay,dt,n,thetmax)
 	theintegrator.fast=False
+	w_i=1.
+	w_inh=w_i/n
 	tau_learning=400.
 	adapt,u,connectivity,W01,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
 	for k in range(times):
@@ -220,6 +226,8 @@ for param in delta_T:
 	
 	rc={'axes.labelsize': 30, 'font.size': 22, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
 		
+	w_i=1.
+	w_inh=w_i/n
 	mystim.inten=0.
 	tau_learning=30000.
 	thetmax=5000.
@@ -232,12 +240,12 @@ for param in delta_T:
 	#dynamics
 	dynamics=figure.add_subplot(111)
 	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	dynamics.plot(t1,phi(u1,theta,uc),lw=2)
+	dynamics.plot(t1,phi(u1,theta,uc),lw=6)
 	#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
 	dynamics.tick_params(labelsize=55)
 	dynamics.set_yticks([0,0.4,0.8,1.2])
-	dynamics.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
-	dynamics.set_xlim([0,1000])
+	dynamics.set_xticks([0,100,200,300,400,500])
+	dynamics.set_xlim([0,500])
 	dynamics.set_ylim([0,1.2])
 	dynamics.set_xlabel('Time (ms)',fontsize=75)
 	dynamics.set_ylabel('Rate',fontsize=75)
@@ -278,25 +286,26 @@ for param in delta_T:
 	#plt.show()
 	
 	figure2=plt.figure(figsize=(25,10))
+	dynamicszoom=figure2.add_subplot(111)
 	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	dynamicszoom=figure.add_subplot(111)
-	dynamicszoom.plot(t1,phi(u1,theta,uc),lw=2)
-	dynamicszoom.set_xlim([0,400])
+	dynamicszoom.plot(t1,phi(u1,theta,uc),lw=6)
+	dynamicszoom.set_xlim([0,300])
 	dynamicszoom.set_ylim([0,1.2])
-	dynamicszoom.tick_params(labelsize=55)
-	dynamicszoom.set_xticks([0,100,200,300,400])
+	dynamicszoom.tick_params(labelsize=70)
+	dynamicszoom.set_xticks([0,100,200,300])
 	dynamicszoom.set_yticks([0,0.4,0.8,1.2])
-	dynamicszoom.set_xlabel('Time (ms)',fontsize=75)
-	dynamicszoom.set_ylabel('Rate',fontsize=75)
+	dynamicszoom.set_xlabel('Time (ms)',fontsize=80)
+	dynamicszoom.set_ylabel('Rate',fontsize=80)
 	name='dynamics_'+str(elT)+'_'+str(eldelta)+'_zoom.pdf'
 	plt.savefig(name, bbox_inches='tight')
 	plt.close()
 		
+		
 	print('------------------------------------------------')
 	print 'Orbit with delta',eldelta,elT
 	tau_learning=400.
-	allRecurrentTheo.append(recurrentTheo(elT,500))
-	allFFTheo.append(feedforwardTheo(elT,eldelta,500))
+	allRecurrentTheo.append(recurrentTheo(elT,100))
+	allFFTheo.append(feedforwardTheo(elT,eldelta,100))
 	allRecurrent.append(valueRecurrent)
 	allFF.append(valueFF)
 
@@ -308,22 +317,14 @@ for param in delta_T:
 #with open(the_filename2, 'wb') as f:
 #	    pickle.dump(allFF, f)
 
-#------------------------------------------------------------------
-#---------------Bifurcation Diagram--------------------------------
-#------------------------------------------------------------------
-# This par of the code is to build a bifurcation diagram 
-# that depends on the stimulation parameters T and delta -> period,delta
-
-
 
 rc={'axes.labelsize': 30, 'font.size': 22, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
 
 
-bifcurve=np.load('mybifcurve.npy')
-mys=np.linspace(0,1.5,100)
-myw=np.linspace(0,1.5,100)
+bifcurve=np.load('mybifcurve2.npy')
+mys=np.linspace(0,2.0,100)
+myw=np.linspace(0,2.0,100)
 
-bigS=np.linspace(0.1,1.,100)
 colormap = plt.cm.afmhot
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 
@@ -344,7 +345,8 @@ for i in range(norbits*nperiod):
 upperBsequences=np.array([1+w_i*(1+0.)/n for j in range(0,len(bifcurve[:,1]))])
 plt.plot(bifcurve[:,0],bifcurve[:,1],'k')
 plt.plot(mys,np.array([1+(w_i+0.)/n for i in range(0,100)]),c='k',lw=1)
-plt.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red')
+plt.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
+plt.fill_between(np.linspace(bifcurve[0,0],2,100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
 plt.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
 plt.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
 
@@ -360,12 +362,12 @@ for i in range(1,n):
 		plt.fill_between(myline2,myconstant1,myconstant1+w_i/n,alpha=alph,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 	alph=alph+(0.95-0.15)/9
 for i in range(1,n):
-	myline1=np.linspace(w_i*(i+0.)/n,1,100)
+	myline1=np.linspace(w_i*(i+0.)/n,2.,100)
 	myconstant1=np.array([1+w_i*(i+0.)/n for l in range(0,100)])
 	plt.fill_between(myline1,myconstant1,myconstant1+w_i/n,alpha=0.1*i,edgecolor='grey', facecolor='green')
 
 myconstant1=np.array([2. for j in range(0,100)])
-myconstant2=np.array([2.1 for j in range(0,100)])
+myconstant2=np.array([2. for j in range(0,100)])
 
 alph=0.15
 for j in range(0,n):
@@ -373,10 +375,10 @@ for j in range(0,n):
 	plt.fill_between(myline2,myconstant1,myconstant2,alpha=1.,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 
 
-plt.xlim([0.,1.])
-plt.ylim([0,2.1])
+plt.xlim([0.,2.])
+plt.ylim([0,2.])
 plt.yticks([0.5,1,1.5,2],fontsize='30')
-plt.xticks([0,0.5,1],fontsize='30')
+plt.xticks([0,1.,2.],fontsize='30')
 plt.xlabel(r'$s$',fontsize='35')
 plt.ylabel(r'$w$',fontsize='35')
 plt.savefig('bifdiagramTvsDel1.pdf', bbox_inches='tight')
