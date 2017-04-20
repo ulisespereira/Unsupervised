@@ -113,52 +113,60 @@ utanh,atanh,Itanh,timetanh=rk4(field_tanh,u0,a0,I0,0.1,tsim)
 upw,apw,Ipw,timepw=rk4(field_pw,u0,a0,I0,0.1,tsim)
 ubrunel,abrunel,Ibrunel,timebrunel=rk4(field_brunel,u0,a0,I0,0.1,tsim)
 
-rc={'axes.labelsize': 30, 'font.size': 20, 'legend.fontsize': 23.0, 'axes.titlesize': 30}
+rc={'axes.labelsize': 40, 'font.size': 20, 'legend.fontsize': 23.0, 'axes.titlesize': 30}
 plt.rcParams.update(**rc)
 
 #connectivity matrix
 W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
 plt.matshow(W01)
+plt.xticks([])
+plt.yticks([])
 plt.xlabel('Connectivity Matrix')
 cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-plt.colorbar(cax=cax)
+cb=plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
+cb.ax.tick_params(labelsize=30)
 plt.savefig('connectivityAdaptation.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 
 
 
 
 #dynamics
 
+rc={'axes.labelsize': 30, 'font.size': 25, 'legend.fontsize': 30.0, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
 figure=plt.figure()
+figure.subplots_adjust(hspace=.1) # vertical space bw figures
 colormap = plt.cm.Accent
 tanh=figure.add_subplot(311)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 tanh.plot(timetanh,phi_tanh(utanh[:,0:n]),lw=2)
 tanh.set_xlim([0,450.])
-tanh.set_ylim([0,3.])
-tanh.set_xticks([0,100,200,300,400])
-tanh.set_yticks([0,1.,2,3.])
-tanh.set_xlabel('Time (ms)')
-tanh.set_ylabel('Rate')
+tanh.set_ylim([0,3.4])
+tanh.set_xticks([])
+tanh.set_yticks([])
+#tanh.set_xlabel('Time (ms)')
+#tanh.set_ylabel('Rate')
 brunel=figure.add_subplot(312)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 brunel.plot(timebrunel,phi_brunel(ubrunel[:,0:n],theta_brunel,uc_brunel),lw=2)
 brunel.set_xlim([0,450.])
-brunel.set_ylim([0,3.])
-brunel.set_xticks([0,100,200,300,400])
-brunel.set_yticks([0,1.,2,3.])
-brunel.set_xlabel('Time (ms)')
-brunel.set_ylabel('Rate')
+brunel.set_ylim([0,3.4])
+brunel.set_xticks([])
+brunel.set_yticks([])
+#brunel.set_xlabel('Time (ms)')
+#brunel.set_ylabel('Rate')
 pwlinear=figure.add_subplot(313)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 pwlinear.plot(timepw,phi(upw[:,0:n],theta,uc),lw=2)
 pwlinear.set_xlim([0,450.])
-pwlinear.set_ylim([0,3.])
-pwlinear.set_xticks([0,100,200,300,400])
-pwlinear.set_yticks([0,1.,2,3.])
+pwlinear.set_ylim([0,3.4])
+pwlinear.set_xticks([100,200,300,400])
+pwlinear.set_yticks([])
 pwlinear.set_xlabel('Time (ms)')
-pwlinear.set_ylabel('Rate')
+#pwlinear.set_ylabel('Rate')
 plt.savefig('sequencesAdaptation.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 

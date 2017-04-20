@@ -130,7 +130,7 @@ ytanh_true,timetanh_true=rk4(field_true_tanh,y0_true,0.1,450)
 ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,450)
 ybrunel_true,timebrunel_true=rk4(field_true_brunel,y0_true,0.1,450)
 
-rc={'axes.labelsize': 30, 'font.size': 20, 'legend.fontsize': 30.0, 'axes.titlesize': 30}
+rc={'axes.labelsize': 40, 'font.size': 20, 'legend.fontsize': 30.0, 'axes.titlesize': 30}
 plt.rcParams.update(**rc)
 
 
@@ -150,10 +150,14 @@ plt.fill_between(mys,upperBsequences,2*np.ones(100),alpha=0.5,edgecolor='k', fac
 
 plt.xlim([0,1.0])
 plt.ylim([0,2.])
-plt.xlabel(r'$s$',fontsize='50')
-plt.ylabel(r'$w$',fontsize='50')
+plt.yticks([1,2])
+plt.xticks([0,0.5,1])
+plt.tick_params(labelsize=40)
+plt.xlabel(r'$s$',fontsize='60')
+plt.ylabel(r'$w$',fontsize='60')
 plt.savefig('bifurcationdiagramExc.pdf', bbox_inches='tight')
-plt.show()
+#plt.show()
+plt.close()
 
 
 
@@ -164,48 +168,55 @@ plt.show()
 W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
 plt.matshow(W01,vmin=-0.2,vmax=0.6)
 plt.xlabel('Connectivity (I)')
+plt.xticks([])
+plt.yticks([])
 cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
+cb=plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
+cb.ax.tick_params(labelsize=30)
 plt.savefig('connectivityExc.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 
 
 
 
 #dynamics
+rc={'axes.labelsize': 30, 'font.size': 25, 'legend.fontsize': 30.0, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
 
 figure=plt.figure()
+figure.subplots_adjust(hspace=.1) # vertical space bw figures
 colormap = plt.cm.Accent
 tanh=figure.add_subplot(311)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 tanh.plot(timetanh_true,phi_tanh(ytanh_true[:,0:n]),lw=2)
 tanh.set_xlim([0,450.])
-tanh.set_ylim([0,3.])
-tanh.set_xticks([0,100,200,300,400])
+tanh.set_ylim([0,3.4])
+tanh.set_xticks([])
 tanh.set_yticks([0,1.,2,3.])
-tanh.set_xlabel('Time (ms)')
+#tanh.set_xlabel('Time (ms)')
 tanh.set_ylabel('Rate')
 brunel=figure.add_subplot(312)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 brunel.plot(timebrunel_true,phi_brunel(ybrunel_true[:,0:n],theta_brunel,uc_brunel),lw=2)
 brunel.set_xlim([0,450.])
-brunel.set_xticks([0,100,200,300,400])
+brunel.set_xticks([])
 brunel.set_yticks([0,1.,2,3.])
-brunel.set_ylim([0,3.])
-brunel.set_xlabel('Time (ms)')
+brunel.set_ylim([0,3.4])
+#brunel.set_xlabel('Time (ms)')
 brunel.set_ylabel('Rate')
 pwlinear=figure.add_subplot(313)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 pwlinear.plot(timepw_true,phi(ypw_true[:,0:n],theta,uc),lw=2)
 pwlinear.set_xlim([0,450.])
-pwlinear.set_xticks([0,100,200,300,400])
-pwlinear.set_ylim([0,3.])
+pwlinear.set_xticks([100,200,300,400])
+pwlinear.set_ylim([0,3.4])
 pwlinear.set_yticks([0,1.,2,3.])
 pwlinear.set_xlabel('Time (ms)')
 pwlinear.set_ylabel('Rate')
 plt.savefig('sequencesExcitatory.pdf', bbox_inches='tight')
-plt.show()
-
+#plt.show()
+plt.close()
 
 
 n=14
@@ -229,12 +240,15 @@ plt.plot(timepw_true,phi(ypw_true[:,0:n],theta,uc),lw=2)
 uc=1e20
 plt.plot(timepw_linear,phi(ypw_linear[:,0:n],theta,uc),'k--',lw=2,alpha=0.6)
 plt.xlim([0,350])
-plt.xticks([0,100,200,300])
+plt.xticks([100,200,300])
 plt.ylim([0,10.])
+plt.yticks([0,5,10.])
+plt.tick_params(labelsize=35)
 plt.xlabel('Time (ms)')
 plt.ylabel('Rate')
 plt.savefig('sequencesExcitatoryBifDiag.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 
 
 n=14
@@ -262,12 +276,15 @@ plt.plot(timepw_true,phi(ypw_true[:,0:n],theta,uc),lw=2)
 uc=1e20
 plt.plot(timepw_linear,phi(ypw_linear[:,0:n],theta,uc),'k--',lw=2,alpha=0.6)
 plt.xlim([0,350])
-plt.xticks([0,100,200,300])
+plt.xticks([100,200,300])
+plt.yticks([0,1,2])
+plt.tick_params(labelsize=35)
 #plt.ylim([0,1.1])
 plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
+#plt.ylabel('Rate')
 plt.savefig('sequencesExcitatoryBifDiag2.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
 
 
 
@@ -300,8 +317,11 @@ plt.rc('xtick',labelsize=28)
 plt.plot(timepw_linear,phi(ypw_linear[:,0:n],theta,uc),'k--',lw=2,alpha=0.6)
 plt.xlim([0,350])
 plt.ylim([0,10.])
-plt.xticks([0,100,200,300])
-plt.xlabel('Time (ms)',fontsize=28)
-plt.ylabel('Rate',fontsize=28)
+plt.xticks([100,200,300])
+plt.yticks([0,5,10])
+plt.tick_params(labelsize=35)
+plt.xlabel('Time (ms)')
+#plt.ylabel('Rate')
 plt.savefig('sequencesExcitatoryBifDiag3.pdf', bbox_inches='tight')
-plt.show()
+plt.close()
+#plt.show()
