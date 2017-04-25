@@ -103,7 +103,7 @@ theintegrator.fast=False
 
 
 
-rc={'axes.labelsize': 45, 'font.size': 35, 'legend.fontsize': 25, 'axes.titlesize': 30}
+rc={'axes.labelsize': 40, 'font.size': 35, 'legend.fontsize': 25, 'axes.titlesize': 30}
 plt.rcParams.update(**rc)
 
 
@@ -114,53 +114,59 @@ plt.rcParams.update(**rc)
 #----------------------------------------------------------
 # Transfer function, stationary leanring function and tau
 #-----------------------------------------------------------
-figure=plt.figure()
-learningrule1=figure.add_subplot(111)
+figure=plt.figure(figsize=(28,7))
+figure.subplots_adjust(wspace=.4) # vertical space bw figures
+#figure.subplots_adjust(hspace=.3) # vertical space bw figures
+lw=7
+learningrule1=figure.add_subplot(131)
 current=np.linspace(-2.5,7,400)
-tf,=learningrule1.plot(current,phi(current,theta,uc),'b',lw=4,label=r'$\phi(u)$')
+tf,=learningrule1.plot(current,phi(current,theta,uc),'b',lw=lw,label=r'$\phi(u)$')
 #learnmax=learningrule1.plot(current,0.5*(1+np.tanh(-50.*(current-thres))),'m',lw=3,label=r'$\tau_{Pre}(u)=\tau_{Post}(u)$')
-learningrule1.axvline(x=thres, ymin=-1., ymax = 2., linewidth=4,color='darkgrey',ls='dashed')
+learningrule1.axhline(y=thres, xmin=-2., xmax = 2., linewidth=lw,color='darkgrey',ls='dashed')
 #learningrule1.legend(tf,r'$\phi(u)$',r'$f(u)=g(u)$'), loc = (0.01, 0.8) )
 learningrule1.set_ylim([0,1.2])
 learningrule1.set_xlim([-1.2,1.2])
-learningrule1.set_yticks([0,0.4,0.8,1.2])
+learningrule1.set_yticks([0.5,1])
 learningrule1.set_xticks([-1,0,1])
-learningrule1.set_xlabel(r'$u$')
-learningrule1.set_xlabel('Current')
-learningrule1.set_ylabel('Rate')
-figure.savefig('transferfunction.pdf', bbox_inches='tight')
+learningrule1.set_xlabel(r'$u$',fontsize=45)
+learningrule1.set_ylabel(r'$\phi(u)$',fontsize=45)
+learningrule1.set_title('(A)',fontsize=45,y=1.06)
+#figure.savefig('transferfunction.pdf', bbox_inches='tight')
 
-figure=plt.figure()
-learningrule2=figure.add_subplot(111)
+#figure=plt.figure()
+learningrule2=figure.add_subplot(132)
 Fr=np.linspace(0,1,400)
-learnmax,=learningrule2.plot(Fr,0.5*(1+np.tanh(a_post*(Fr-b_post))),'g',lw=4,label=r'$f(u)=g(u)$')
+learnmax,=learningrule2.plot(Fr,0.5*(1+np.tanh(a_post*(Fr-b_post))),'g',lw=lw,label=r'$f(u)=g(u)$')
 #learnmax=learningrule1.plot(current,0.5*(1+np.tanh(-50.*(current-thres))),'m',lw=3,label=r'$\tau_{Pre}(u)=\tau_{Post}(u)$')
-learningrule2.axvline(x=thres, ymin=-1., ymax = 2., linewidth=4,color='darkgrey',ls='dashed')
+learningrule2.axvline(x=thres, ymin=-1., ymax = 2., linewidth=lw,color='darkgrey',ls='dashed')
 #learningrule2.legend( (tf,learnmax),(r'$\phi(u)$',r'$f(u)=g(u)$'), loc = (0.01, 0.8) )
-learningrule2.set_ylim([0,1.])
-#learningrule2.set_xlim([0,1.])
-learningrule2.set_yticks([0,0.5,1.])
-#learningrule2.set_xticks([0,0.5,1])
-learningrule2.set_xlabel('Rate')
-learningrule2.set_ylabel('Current')
-figure.savefig('LR.pdf', bbox_inches='tight')
-plt.close(figure)
+learningrule2.set_ylim([0,1.2])
+learningrule2.set_xlim([0,1.])
+learningrule2.set_yticks([0.5,1.])
+learningrule2.set_xticks([0,0.5,1])
+learningrule2.set_xlabel(r'$\phi(u)$',fontsize=45)
+learningrule2.set_ylabel(r'$f(\phi(u))$',fontsize=45)
+learningrule2.set_title('(B)',fontsize=45,y=1.06)
+#figure.savefig('LR.pdf', bbox_inches='tight')
+#plt.close(figure)
 
-figure=plt.figure()
+#figure=plt.figure()
 #learningrule1.legend(loc='upper left')
-learningrule3=figure.add_subplot(111)
+learningrule3=figure.add_subplot(133)
 current1=np.linspace(0,1,200)
 current2=np.linspace(0,1,200)
 myplot=learningrule3.contourf(current1,current2,winf([current1,current2])*(1./wmax),10,alpha=0.5,cmap=plt.cm.autumn,origin='lower')
-learningrule3.axvline(x=thres, ymin=0.3, ymax = 1, linewidth=4,color='darkgrey',ls='dashed')
-learningrule3.axhline(y=thres, xmin=0.3, xmax = 1, linewidth=4,color='darkgrey',ls='dashed')
-learningrule3.set_xlabel('Rate Pre')
-learningrule3.set_ylabel('Rate Post')
-learningrule3.set_ylim([0.4,1.])
-learningrule3.set_xlim([0.4,1.])
+learningrule3.axvline(x=thres, ymin=(thres-0.3)/0.7, ymax = 1, linewidth=lw,color='darkgrey',ls='dashed')
+learningrule3.axhline(y=thres, xmin=(thres-0.3)/(0.7), xmax = 1, linewidth=lw,color='darkgrey',ls='dashed')
+learningrule3.set_xlabel(r'Rate pre ($\phi(u_{j})$)')
+learningrule3.set_ylabel(r'Rate post ($\phi(u_{i})$)')
+learningrule3.set_ylim([0.3,1.])
+learningrule3.set_xlim([0.3,1.])
 learningrule3.set_xticks([0.4,0.7,1])
 learningrule3.set_yticks([0.4,0.7,1])
-plt.colorbar(myplot,ticks=[0,0.5,1.])
+cbar=plt.colorbar(myplot,ticks=[0,0.5,1.])
+cbar.ax.set_ylabel(r'$w_{max}$',fontsize=45)
+learningrule3.set_title('(C)',fontsize=45,y=1.06)
 figure.savefig('LRheat.pdf', bbox_inches='tight')
 #plt.show()
 plt.close(figure)
@@ -169,6 +175,9 @@ print 'tranferfunction.pdf is stored'
 #---------------------------------------------------------------
 # Qualitative  T vs  Delta diagaram
 #---------------------------------------------------------------
+
+rc={'axes.labelsize': 40, 'font.size': 30, 'legend.fontsize': 25, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
 
 myTv=np.linspace(0,2*delay,200)
 myDeltav=np.linspace(0,2*delay,200)
@@ -187,8 +196,8 @@ plt.ylim([0,2*delay])
 plt.xlim([0,2*delay])
 plt.xticks([delay,2*delay],[r'$D$',r'$2D$'])
 plt.yticks([delay,2*delay],[r'$D$',r'$2D$'])
-plt.xlabel(r'$\Delta$ (ms)')
-plt.ylabel(r'$T$ (ms)')
+plt.xlabel(r'$\Delta$ (ms)',fontsize=32)
+plt.ylabel(r'$T$ (ms)',fontsize=32)
 plt.savefig('qualitativediagram.pdf', bbox_inches='tight')
 plt.close()
 #plt.show()
@@ -198,6 +207,16 @@ print 'qualitativediagram.pdf is stored'
 #----------------------------------------------------
 #------- Examples Qualitative Diagram ---------------
 #----------------------------------------------------
+
+rc={'axes.labelsize': 40, 'font.size': 35, 'legend.fontsize': 25, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
+
+
+
+figure=plt.figure(figsize=(14,12))
+figure.subplots_adjust(wspace=.12) # vertical space bw figures
+figure.subplots_adjust(hspace=.1) # horizontal space bw figures
+dynamics1=figure.add_subplot(221)
 amp=1.25
 timesmax=30
 # region 1
@@ -232,26 +251,27 @@ for l in range(int(times)):
 	wTheoric.append(wk)
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=3)
+		dynamics1.plot(t,connectivity[:,i,i],'c',lw=3)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=3)
+		dynamics1.plot(t,connectivity[:,i+1,i],'y',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		dynamics1.plot(t,connectivity[:,i+2,i],'g',lw=3)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		dynamics1.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,10000])
-plt.xticks([0,5000,10000],['0','5','10'])
-plt.yticks([0,.3,0.6])
-plt.xlabel('Time (s)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('dynamicsweights1.pdf', bbox_inches='tight')
+		dynamics1.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics1.set_xlim([0,10000])
+dynamics1.set_ylim([0,.6])
+dynamics1.set_xticks([])#[0,5000,10000],['0','5','10'])
+dynamics1.set_yticks([.3,0.6])
+#plt.xlabel('Time (s)')
+dynamics1.set_ylabel('Synaptic Weights')
+#plt.savefig('dynamicsweights1.pdf', bbox_inches='tight',transparent=True)
 #plt.show()
-plt.close()
+#plt.close()
 
-print 'dynamicsweights1.pdf is stored'
 # region 2
+dynamics2=figure.add_subplot(222)
 amp=1.8
 delta=80.
 period=20.5
@@ -287,29 +307,30 @@ for l in range(int(times)):
 
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=3)
+		dynamics2.plot(t,connectivity[:,i,i],'c',lw=3)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=3)
+		dynamics2.plot(t,connectivity[:,i+1,i],'y',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		dynamics2.plot(t,connectivity[:,i+2,i],'g',lw=3)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		dynamics2.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,10000])
+		dynamics2.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics2.set_xlim([0,10000])
 #plt.xticks([0,5000,10000])
-plt.xticks([0,5000,10000],['0','5','10','15'])
+dynamics2.set_xticks([])#0,5000,10000],['0','5','10','15'])
 #plt.xticks([0,40000,80000,120000],['0','40','80','120'])
-plt.yticks([0,.3,.6])
-plt.ylim([0,.6])
-plt.xlabel('Time (s)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('dynamicsweights2.pdf', bbox_inches='tight')
+dynamics2.set_yticks([])#0,.3,.6])
+dynamics2.set_ylim([0,.6])
+#plt.xlabel('Time (s)')
+#plt.ylabel('Synaptic Weights')
+#plt.savefig('dynamicsweights2.pdf', bbox_inches='tight',transparent=True)
 #plt.show()
-plt.close()
+#plt.close()
 
 
 print 'dynamicsweights2.pdf is stored'
+dynamics3=figure.add_subplot(224)
 # region 3
 delta=50.
 period=1.
@@ -325,27 +346,30 @@ theintegrator.fast=False
 u,Wdiag,Woffdiag,connectivity,W01,t=theintegrator.DDE(field,x0,W0)
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=3)
+		dynamics3.plot(t,connectivity[:,i,i],'c',lw=3)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=3)
+		dynamics3.plot(t,connectivity[:,i+1,i],'y',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		dynamics3.plot(t,connectivity[:,i+2,i],'g',lw=3)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		dynamics3.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,10000])
-#plt.xticks([0,4000,8000])
-plt.xticks([0,5000,10000],['0','5','10'])
-plt.yticks([0,.3,.6])
-plt.xlabel('Time (s)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('dynamicsweights3.pdf', bbox_inches='tight')
+		dynamics3.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics3.set_xlim([0,10000])
+dynamics3.set_ylim([0,0.6])
+#dynamics3.xticks([0,4000,8000])
+dynamics3.set_xticks([0,5000,10000])
+dynamics3.set_xticklabels(['0','5','10'])
+dynamics3.set_yticks([])
+dynamics3.set_xlabel('Time (s)')
+#plt.ylabel('Synaptic Weights')
+#plt.savefig('dynamicsweights3.pdf', bbox_inches='tight',transparent=True)
 #plt.show()
-plt.close()
-print 'dynamicsweights3.pdf is stored'
+#plt.close()
+#print 'dynamicsweights3.pdf is stored'
 
 # region 4
+dynamics4=figure.add_subplot(223)
 #amp=3.
 delta=9.
 period=7.
@@ -362,25 +386,27 @@ theintegrator.fast=False
 u,Wdiag,Woffdiag,connectivity,W01,t=theintegrator.DDE(field,x0,W0)
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=3)
+		dynamics4.plot(t,connectivity[:,i,i],'c',lw=3)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=3)
+		dynamics4.plot(t,connectivity[:,i+1,i],'y',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		dynamics4.plot(t,connectivity[:,i+2,i],'g',lw=3)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		dynamics4.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,10000])
-#plt.xticks([0,2600,5200])
-plt.xticks([0,5000,10000],['0','5','10'])
-plt.yticks([0,.3,.6])
-plt.ylim([0,.6])
-plt.xlabel('Time (s)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('dynamicsweights4.pdf', bbox_inches='tight')
+		dynamics4.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics4.set_xlim([0,10000])
+#dynamics4.xticks([0,2600,5200])
+dynamics4.set_xticks([0,5000,10000])
+dynamics4.set_xticklabels(['0','5','10'])
+dynamics4.set_yticks([.3,.6])
+dynamics4.set_ylim([0,.6])
+dynamics4.set_xlabel('Time (s)')
+dynamics4.set_ylabel('Synaptic Weights')
+plt.savefig('dynamicsweights.pdf', bbox_inches='tight',transparent=True)
+#plt.savefig('dynamicsweights.pdf', bbox_inches='tight')
 #plt.show()
-plt.close()
+#plt.close()
 
 
 print 'dynamicsweights4.pdf is stored'
