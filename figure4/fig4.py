@@ -1,3 +1,4 @@
+import matplotlib.gridspec as gridspec
 import numpy as np
 from scipy import sparse
 from scipy.integrate import odeint
@@ -103,11 +104,11 @@ theintegrator.fast=False
 
 
 
-rc={'axes.labelsize': 50, 'font.size': 40, 'legend.fontsize': 25, 'axes.titlesize': 30}
+rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25, 'axes.titlesize': 35}
 plt.rcParams.update(**rc)
 
 
-#i
+
 #-------------------------------------------------------------
 #-------------------stimulation instability-------------------
 #------------------------------------------------------------
@@ -128,100 +129,151 @@ theintegrator.fast=False
 
 u,Wdiag,Woffdiag,connectivity,W01,t=theintegrator.DDE(field,x0,W0)
 
+fig = plt.figure(figsize=(18, 12))
+gs = gridspec.GridSpec(2, 3)
+gs0 = gridspec.GridSpec(2, 2)
+gs.update(wspace=0.3,hspace=0.43)
+gs0.update(wspace=0.1,hspace=0.1,left=0.67,right=0.91,top=0.9,bottom=0.56)
+#gs0.update(wspace=0.1,hspace=0.1)
+ax1 = plt.subplot(gs[0,0])
+ax2 = plt.subplot(gs[0,1])
+ax3a = plt.subplot(gs0[0,0])
+ax3b = plt.subplot(gs0[0,1])
+ax3c = plt.subplot(gs0[1,0])
+ax3d = plt.subplot(gs0[1,1])
+#ax3=plt.subplot(gs[0,2])
+ax4 = plt.subplot(gs[1,0])
+ax5 = plt.subplot(gs[1,1])
+ax6 = plt.subplot(gs[1,2])
 ## Dynamics 
 mystim.inten=.1
 colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
+ax4.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax4.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
-plt.xlim([0,400])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xticks([0,200,400])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation1.pdf', bbox_inches='tight')
+ax4.plot(t,elstim,'k',lw=3)
+ax4.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax4.set_ylim([0,1.2])
+ax4.set_xlim([0,400])
+ax4.set_yticks([0.5,1.])
+ax4.set_xticks([0,200,400])
+ax4.set_xlabel('Time (ms)')
+ax4.set_ylabel('Rate')
+#plt.savefig('stimulation1.pdf', bbox_inches='tight')
 #plt.show()
-plt.close()
+#plt.close()
 
 print 'stimulation1.pdf is stored'
 
 colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
+ax5.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax5.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
+ax5.plot(t,elstim,'k',lw=3)
+ax5.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax5.set_ylim([0,1.2])
 time_plot=14*(lagStim+n*(period+delta))
-plt.xlim([time_plot,time_plot+400])
-plt.xticks([time_plot,time_plot+200,time_plot+400])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation2.pdf', bbox_inches='tight')
+ax5.set_xlim([time_plot,time_plot+400])
+ax5.set_xticks([time_plot,time_plot+200,time_plot+400])
+ax5.set_yticks([])
+ax5.set_ylim([0,1.2])
+ax5.set_xlabel('Time (ms)')
+ax5.set_title('(D)',y=1.04)
+#ax5.set_ylabel('Rate')
+#plt.savefig('stimulation2.pdf', bbox_inches='tight')
 #plt.show()
-plt.close()
+#plt.close()
 print 'stimulation2.pdf is stored'
 
 colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
+ax6.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax6.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.ylim([0,1.2])
+ax6.plot(t,elstim,'k',lw=3)
+ax6.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax6.set_ylim([0,1.2])
 time_plot=18*(lagStim+n*(period+delta))
-plt.xlim([time_plot,time_plot+400])
-plt.xticks([time_plot,time_plot+200,time_plot+400])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('stimulation3.pdf', bbox_inches='tight')
+ax6.set_xlim([time_plot,time_plot+400])
+ax6.set_ylim([0,1.2])
+ax6.set_xticks([time_plot,time_plot+200,time_plot+400])
+ax6.set_yticks([])
+ax6.set_xlabel('Time (ms)')
+#ax6.set_ylabel('Rate')
+#plt.savefig('stimulation3.pdf', bbox_inches='tight')
 #plt.show()
-plt.close()
+#plt.close()
 
 print 'stimulation3.pdf is stored'
 
 colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,phi(u[:,:],theta,uc),lw=3)
+ax1.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax1.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
-plt.plot(t,elstim,'k',lw=3)
-plt.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-plt.xlim([0,6000])
-plt.yticks([0,0.4,0.8,1.2])
-plt.xticks([0,1000,2000,3000,4000,5000,6000],[0,1,2,3,4,5,6])
-plt.ylim([0,1.2])
-plt.xlabel('Time (s)')
-plt.ylabel('Rate')
-plt.savefig('stimulationall.pdf', bbox_inches='tight')
+ax1.plot(t,elstim,'k',lw=3)
+ax1.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax1.set_xlim([4000,8000])
+ax1.set_yticks([0.5,1])
+ax1.set_xticks([4000,6000,8000])
+ax1.set_xticklabels(['4','6','8'])
+ax1.set_ylim([0,1.2])
+ax1.set_xlabel('Time (s)')
+ax1.set_ylabel('Rate')
+ax1.set_title('(A)',y=1.04)
+#plt.savefig('stimulationall.pdf', bbox_inches='tight')
 #plt.show()
-plt.close()
+#plt.close()
 
 print 'stimulationall.pdf is stored'
 ###dynamics synapses
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=3)
+		ax2.plot(t,connectivity[:,i,i],'c',lw=3)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=3)
+		ax2.plot(t,connectivity[:,i+1,i],'y',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		ax2.plot(t,connectivity[:,i+2,i],'g',lw=3)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		ax2.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
-plt.xlim([0,15000])
-plt.xticks([0,5000,10000,15000],[0,5,10,15])
-plt.yticks([0,1.,2.,3.])
-plt.xlabel('Time (s)')
-plt.ylabel('Synaptic Weights')
-plt.savefig('connectivitystimulation.pdf', bbox_inches='tight')
+		ax2.plot(t,connectivity[:,i,i+2],'b',lw=3)
+ax2.set_xlim([0,10000])
+ax2.set_xticks([0,5000,10000])
+ax2.set_xticklabels(['0','5','10'])
+ax2.set_yticks([0,1.,2.,3.])
+ax2.set_xlabel('Time (s)')
+ax2.set_ylabel('Synaptic Weights')
+ax2.set_title('(B)',y=1.04)
+
+ax3a.matshow(connectivity[0,:,:],vmin=0,vmax=2.5)
+ax3a.set_title('(C)',y=1.08,x=1.06)
+ax3a.set_xticks([])
+ax3a.set_yticks([])
+ax3b.matshow(connectivity[int(3000./dt),:,:],vmin=0,vmax=1.2)
+ax3b.set_xticks([])
+ax3b.set_yticks([])
+ax3c.matshow(connectivity[int(6000./dt),:,:],vmin=0,vmax=1.2)
+ax3c.set_xticks([])
+ax3c.set_yticks([])
+ax3d.matshow(connectivity[int(9000./dt),:,:],vmin=0,vmax=1.2)
+ax3d.set_xticks([])
+ax3d.set_yticks([])
+sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=1.2))
+# fake up the array of the scalar mappable. Urgh...
+sm._A = []
+cax = fig.add_axes([0.92, 0.55, 0.02, 0.36]) # [left, bottom, width, height] 
+myticks=[0.0,1]
+cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
+cbar.ax.tick_params(labelsize=30) 
+#cbar.set_label(r'Capacity ($\alpha_c$)',size=42)
+#plt.tight_layout()
+#gs0.tight_layout(fig,rect=[0.65,0.56,0.89,0.9],h_pad=0.1,w_pad=0.1) #
+fig.savefig('fig4.pdf', bbox_inches='tight')
 #plt.show()
 plt.close()
+
+
+
+
 
 
 print 'connectivitystimulation.pdf is stored'
