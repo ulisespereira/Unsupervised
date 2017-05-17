@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.gridspec as gridspec
 from scipy import sparse
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
@@ -168,6 +169,21 @@ def feedforwardTheo(T,delta,k):
 #-----------------Stimulation of Populations------------------------
 #-------------------------------------------------------------------
 
+fig = plt.figure(figsize=(30, 12))
+gs = gridspec.GridSpec(1, 2)
+gs.update(wspace=0.2,hspace=0.3)
+gs0 = gridspec.GridSpec(2, 2)
+gs0.update(wspace=0.13,hspace=0.1,left=0.55,right=0.95,top=0.9,bottom=0.1)
+axbif = plt.subplot(gs[0,0])
+ax1 = plt.subplot(gs0[0,0])
+ax2= plt.subplot(gs0[0,1])
+ax3 = plt.subplot(gs0[1,0])
+ax4 = plt.subplot(gs0[1,1])
+
+rc={'axes.labelsize':55, 'font.size': 45, 'legend.fontsize': 25, 'axes.titlesize': 35}
+plt.rcParams.update(**rc)
+
+list_axis=[ax1,ax2,ax3,ax4]
 # setting up the simulation 
 
 
@@ -184,11 +200,16 @@ norbits=2
 nperiod=2
 
 #delta_T=[[21.,9.5],[18.,15.],[23.,12.],[28.,16.]]
-delta_T=[[20.,8.5],[5.,13.],[7.,14.],[50.,40.]]
+delta_T=[[50,40],[20.,8.5],[7,14],[5.,13.]]
+
+# storing dynamics weights
 allRecurrent=[]
 allFF=[]
 allRecurrentTheo=[]
 allFFTheo=[]
+# storing rate dynamics
+mydyn=[]
+
 for param in delta_T:
 	elT=param[0]
 	eldelta=param[1]
@@ -222,7 +243,6 @@ for param in delta_T:
 	W0_2=[connectivity[-1,:,:] for i in range(npts)]
 	H0_2=[np.ones(n) for i in range(npts)]
 	
-	rc={'axes.labelsize': 50, 'font.size': 50, 'legend.fontsize': 50., 'axes.titlesize': 50}
 		
 	w_i=1.
 	w_inh=w_i/n
@@ -232,71 +252,7 @@ for param in delta_T:
 	theintegrator=myintegrator(delay,dt,n,thetmax)
 	theintegrator.fast=False
 	adapt1,u1,connectivity1,W011,myH1,t1=theintegrator.DDE_Norm_Miller(field,a0_1,x0_1,W0_1,H0_1)
-	#adapt2,u2,connectivity2,W012,myH2,t2=theintegrator.DDE_Norm_Miller(field,a0_2,x0_2,W0_2,H0_2)
-	figure=plt.figure(figsize=(25,10))
-	colormap = plt.cm.Accent
-	#dynamics
-	dynamics=figure.add_subplot(111)
-	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	dynamics.plot(t1,phi(u1,theta,uc),lw=6)
-	#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
-	dynamics.tick_params(labelsize=55)
-	dynamics.set_yticks([0,0.4,0.8,1.2])
-	dynamics.set_xticks([0,100,200,300,400,500])
-	dynamics.set_xlim([0,500])
-	dynamics.set_ylim([0,1.2])
-	dynamics.set_xlabel('Time (ms)',fontsize=75)
-	dynamics.set_ylabel('Rate',fontsize=75)
-
-	#inset_axes = inset_axes(dynamics,width="50%",height=1.0,loc=1)
-	#a = plt.plot(t1,phi(u1,theta,uc))
-	#plt.title('Probability')
-	#plt.xticks([])
-	#plt.yticks([])
-	
-#	#dynamics
-#	dynamics2=figure.add_subplot(312)
-#	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#	dynamics2.plot(t1,myH1,lw=2.)
-#	dynamics2.set_xlim([0,1000])
-#	dynamics2.set_ylim([0,1.2])
-#	dynamics2.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
-#	dynamics2.set_yticks([0,0.4,0.8,1.2])
-#	dynamics2.set_xlabel('Time (ms)')
-#	dynamics2.set_ylabel('H',fontsize=18)
-#	
-#	dynamics3=figure.add_subplot(313)
-#	for i in range(10):
-#		dynamics3.plot(t1,connectivity1[:,i,i],'c',lw=3)
-#	for i in range(0,9):
-#		dynamics3.plot(t1,connectivity1[:,i+1,i],'y',lw=3)	
-#	
-#	dynamics3.set_xlim([0,1000])
-#	dynamics3.set_ylim([0,2.0])
-#	dynamics3.set_yticks([0,0.5,1.,1.5,2.])
-#	dynamics3.set_xticks([0,200,400,600,800,1000],['0','1','2','3','4','5'])
-#	dynamics3.set_xlabel('Time (ms)',fontsize=18)
-#	dynamics3.set_ylabel('Synaptic Weights',fontsize=18)
-#
-	name='dynamics_'+str(elT)+'_'+str(eldelta)+'.pdf'
-	plt.savefig(name, bbox_inches='tight')
-	plt.close()
-	#plt.show()
-	
-	figure2=plt.figure(figsize=(25,10))
-	dynamicszoom=figure2.add_subplot(111)
-	plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-	dynamicszoom.plot(t1,phi(u1,theta,uc),lw=6)
-	dynamicszoom.set_xlim([0,300])
-	dynamicszoom.set_ylim([0,1.2])
-	dynamicszoom.tick_params(labelsize=70)
-	dynamicszoom.set_xticks([0,100,200,300])
-	dynamicszoom.set_yticks([0,0.4,0.8,1.2])
-	dynamicszoom.set_xlabel('Time (ms)',fontsize=80)
-	dynamicszoom.set_ylabel('Rate',fontsize=80)
-	name='dynamics_'+str(elT)+'_'+str(eldelta)+'_zoom.pdf'
-	plt.savefig(name, bbox_inches='tight')
-	plt.close()
+	mydyn.append(u1)
 		
 	print('------------------------------------------------')
 	print 'Orbit with delta',eldelta,elT
@@ -305,14 +261,40 @@ for param in delta_T:
 	allFFTheo.append(feedforwardTheo(elT,eldelta,100))
 	allRecurrent.append(valueRecurrent)
 	allFF.append(valueFF)
-#
-#the_filename1='recurrent_dynamics.dat'
-#with open(the_filename1, 'wb') as f:
-#	    pickle.dump(allRecurrent, f)
-#
-#the_filename2='ff_dynamics.dat'
-#with open(the_filename2, 'wb') as f:
-#	    pickle.dump(allFF, f)
+
+
+colormap = plt.cm.Accent
+for l in range(len(mydyn)):
+	#dynamics
+	list_axis[l].set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+	list_axis[l].plot(t1,phi(mydyn[l],theta,uc),lw=6)
+	#dynamics.plot(timepw_true_approx,phi(ypw_true_approx[:,0:n],theta,uc),lw=2,color='b')
+	list_axis[l].set_ylim([0,1.2])
+	if l==0:
+		list_axis[l].set_yticks([0.5,1.])
+		list_axis[l].set_xticks([])			
+		list_axis[l].set_ylabel('Rate')
+		list_axis[l].text(420, 1.05, 'PA')
+	elif l==1:
+		list_axis[l].set_yticks([])
+		list_axis[l].set_xticks([])			
+		list_axis[l].text(333, 1.05, 'PA/SA')
+	elif l==2:
+		list_axis[l].set_yticks([0.5,1.])
+		list_axis[l].set_xticks([0,200,400])
+		list_axis[l].set_xticklabels(['0','0.2','0.4'])
+		list_axis[l].set_xlabel('Time (s)')
+		list_axis[l].set_ylabel('Rate')
+		list_axis[l].text(420, 1.05, 'SA')
+	elif l==3:
+		list_axis[l].set_yticks([])
+		list_axis[l].set_xticks([0,200,400])			
+		list_axis[l].set_xticklabels(['0','0.2','0.4'])
+		list_axis[l].set_xlabel('Time (s)')
+		list_axis[l].text(385, 1.05, 'dSA')
+	list_axis[l].set_xlim([0,500])
+
+
 
 #------------------------------------------------------------------
 #---------------Bifurcation Diagram--------------------------------
@@ -320,9 +302,6 @@ for param in delta_T:
 # This par of the code is to build a bifurcation diagram 
 # that depends on the stimulation parameters T and delta -> period,delta
 
-
-
-rc={'axes.labelsize': 30, 'font.size': 22, 'legend.fontsize': 28.0, 'axes.titlesize': 30}
 
 
 bifcurve=np.load('mybifcurve2.npy')
@@ -333,27 +312,30 @@ colormap = plt.cm.afmhot
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 
 
-#with open(the_filename1, 'rb') as f:
-#	    allRecurrent = pickle.load(f)
-
-#with open(the_filename2, 'rb') as f:
-#	    allFF = pickle.load(f)
 mymarkers=['o','+','h','s']
+sizemarker=360
+axbif.text(0.04, 1.7, 'PA')
+axbif.text(1.61, 1.68, 'PA/SA')
+axbif.text(1.55, 0.95, 'SA')
+axbif.text(1.52, 0.1, 'dSA')
 
 for i in range(norbits*nperiod):
-	plt.plot(allFF[i],allRecurrent[i],'ko',alpha=0.6,lw=1,marker=mymarkers[i],markersize=12.)
+	if i==1:
+		axbif.scatter(allFF[i],allRecurrent[i],marker=mymarkers[i],s=sizemarker,facecolors='k')
+	else:
+		axbif.scatter(allFF[i],allRecurrent[i],marker=mymarkers[i],s=sizemarker,facecolors='none',edgecolors='k')
 
 for i in range(norbits*nperiod):
-	plt.plot(allFFTheo[i],allRecurrentTheo[i],color='r',alpha=0.7,lw=4)
+	axbif.plot(allFFTheo[i],allRecurrentTheo[i],color='r',alpha=0.7,lw=7)
 
 
 upperBsequences=np.array([1+w_i*(1+0.)/n for j in range(0,len(bifcurve[:,1]))])
-plt.plot(bifcurve[:,0],bifcurve[:,1],'k')
-plt.plot(mys,np.array([1+(w_i+0.)/n for i in range(0,100)]),c='k',lw=1)
-plt.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
-plt.fill_between(np.linspace(bifcurve[0,0],2,100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
-plt.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
-plt.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
+axbif.plot(bifcurve[:,0],bifcurve[:,1],'k')
+axbif.plot(mys,np.array([1+(w_i+0.)/n for i in range(0,100)]),c='k',lw=1)
+axbif.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
+axbif.fill_between(np.linspace(bifcurve[0,0],2,100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
+axbif.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
+axbif.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
 
 
 colormap = plt.cm.winter 
@@ -364,12 +346,12 @@ for i in range(1,n):
 	for j in range(0,i):
 		myline2=np.linspace(w_i*(j+0.)/n,w_i*(j+1.)/n,100)
 		myconstant1=np.array([1+w_i*(i+0.)/n for l in range(0,100)])
-		plt.fill_between(myline2,myconstant1,myconstant1+w_i/n,alpha=alph,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
+		axbif.fill_between(myline2,myconstant1,myconstant1+w_i/n,alpha=alph,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 	alph=alph+(0.95-0.15)/9
 for i in range(1,n):
 	myline1=np.linspace(w_i*(i+0.)/n,2.,100)
 	myconstant1=np.array([1+w_i*(i+0.)/n for l in range(0,100)])
-	plt.fill_between(myline1,myconstant1,myconstant1+w_i/n,alpha=0.1*i,edgecolor='grey', facecolor='green')
+	axbif.fill_between(myline1,myconstant1,myconstant1+w_i/n,alpha=0.1*i,edgecolor='grey', facecolor='green')
 
 myconstant1=np.array([2. for j in range(0,100)])
 myconstant2=np.array([2. for j in range(0,100)])
@@ -377,16 +359,17 @@ myconstant2=np.array([2. for j in range(0,100)])
 alph=0.15
 for j in range(0,n):
 	myline2=np.linspace(w_i*(j+0.)/n,w_i*(j+1.)/n,100)
-	plt.fill_between(myline2,myconstant1,myconstant2,alpha=1.,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
+	axbif.fill_between(myline2,myconstant1,myconstant2,alpha=1.,edgecolor='grey', facecolor=colormap((j+0.)/n)[0:3])
 
 
-plt.xlim([0.,2.])
-plt.ylim([0,2.])
-plt.yticks([0.5,1,1.5,2],fontsize='30')
-plt.xticks([0,1.,2.],fontsize='30')
-plt.xlabel(r'$s$',fontsize='35')
-plt.ylabel(r'$w$',fontsize='35')
-plt.savefig('bifdiagramTvsDel1.pdf', bbox_inches='tight')
+axbif.set_xlim([0.,2.])
+axbif.set_ylim([0,2.])
+axbif.set_yticks([1,2])
+axbif.set_xticks([0,1.,2.])
+axbif.set_xlabel(r'Feed-forward ($s$)')
+axbif.set_ylabel(r'Recurrent ($w$)')
+
+fig.savefig('fig8.pdf', bbox_inches='tight')
 #plt.show()
 
 
