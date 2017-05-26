@@ -45,6 +45,10 @@ u_null=np.linspace(umin,umax,500)
 #-------------------- Model--------------------------------------------
 #----------------------------------------------------------------------
 
+rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
+
+
 ustar=np.arctanh(2*y0-1)/a1-b1
 plt.axvline(ustar, color='red',lw=3)
 
@@ -72,11 +76,11 @@ for H0 in myh0:
 
 plt.xlim([umin,umax])
 plt.ylim([Hmin,Hmax])
-plt.xticks([0,1,2],size=30)
-plt.yticks([0,50,100],size=30)
+plt.xticks([0,1,2])
+plt.yticks([0,50,100])
 plt.legend(loc='upper right',fontsize=25)
-plt.xlabel(r'$u$',size=40)
-plt.ylabel(r'$H$',size=40)
+plt.xlabel(r'$u$')
+plt.ylabel(r'$H$')
 plt.savefig('SimpleModel.pdf', bbox_inches='tight',transparent=True)
 plt.close()
 
@@ -113,23 +117,23 @@ for H0 in myh0:
 
 plt.xlim([umin,umax])
 plt.ylim([Hmin,Hmax])
-plt.xticks([0,1,2],size=30)
-plt.yticks([0,50,100],size=30)
-plt.xlabel(r'$u$',size=40)
-plt.ylabel(r'$H$',size=40)
+plt.xticks([0,1,2])
+plt.yticks([0,50,100])
+plt.xlabel(r'$u$')
+plt.ylabel(r'$H$')
 plt.savefig('SimpleModelAmmended.pdf', bbox_inches='tight',transparent=True)
 plt.xlim([-0.0001,0.005])
 plt.ylim([0,1.2])
-plt.xticks([0.0025,0.005],size=30)
-plt.yticks([0,0.4,0.8,1.2],size=30)
-plt.xlabel(r'$u$',size=40)
-plt.ylabel(r'$H$',size=40)
+plt.xticks([0.0025,0.005])
+plt.yticks([0,0.5,1])
+plt.xlabel(r'$u$')
+plt.ylabel(r'$H$')
 plt.savefig('SimpleModelAmmendedZoom.pdf', bbox_inches='tight',transparent=True)
 plt.close() 
 
 
 
-myw=np.linspace(0.1,1,100)
+myw=np.logspace(-2,3,400)
 myHAmended=[]
 myH=[]
 i=0
@@ -141,17 +145,20 @@ for thew in myw:
 #	print i,solAmmended.x[1]
 	i=i+1
 
-plt.plot(myw,np.array(myHAmended),color='b',lw=4)
-plt.plot(myw,myH,lw=4,color='orange')
-plt.yscale('log')
-plt.xlim([0.1,1])
-plt.xlabel(r'$w$',size=40)
-plt.ylabel(r'$H^*$',size=40)
-plt.xticks([0.1,0.5,1],size=30)
-plt.yticks([0.1,1,10,100,1000],size=30)
+plt.loglog(myw,np.array(myHAmended),color='b',lw=4,label='Modified')
+plt.loglog(myw,myH,lw=4,color='orange',label='Linear')
+#plt.yscale('log')
+plt.xlim([0.08,100])
+plt.ylim([0.01,1000])
+plt.xlabel(r'$w$')
+plt.ylabel(r'$H^*$')
+plt.xticks([0.1,1,10,100])
+plt.yticks([0.1,1,10,100,1000])
+plt.legend(loc='upper right',fontsize=23)
 plt.savefig('Hvsw.pdf', bbox_inches='tight',transparent=True)
+plt.yscale('linear')
 plt.ylim([0.0,1.5])
-plt.yticks([0,0.5,1.,1.5],size=30)
+plt.yticks([0.5,1.,1.5])
 plt.savefig('HvswZoom.pdf', bbox_inches='tight',transparent=True)
 #plt.show()
 
