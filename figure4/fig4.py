@@ -106,6 +106,7 @@ theintegrator.fast=False
 
 rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25, 'axes.titlesize': 35}
 plt.rcParams.update(**rc)
+plt.rcParams['image.cmap'] = 'jet'
 
 
 
@@ -133,7 +134,7 @@ fig = plt.figure(figsize=(18, 12))
 gs = gridspec.GridSpec(2, 3)
 gs0 = gridspec.GridSpec(2, 2)
 gs.update(wspace=0.3,hspace=0.43)
-gs0.update(wspace=0.1,hspace=0.1,left=0.67,right=0.91,top=0.9,bottom=0.56)
+gs0.update(wspace=0.1,hspace=0.1,left=0.67,right=0.91,top=0.88,bottom=0.56)
 #gs0.update(wspace=0.1,hspace=0.1)
 ax1 = plt.subplot(gs[0,0])
 ax2 = plt.subplot(gs[0,1])
@@ -156,8 +157,8 @@ ax4.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='d
 ax4.set_ylim([0,1.2])
 ax4.set_xlim([0,400])
 ax4.set_yticks([0.5,1.])
-ax4.set_xticks([0,200,400])
-ax4.set_xlabel('Time (ms)')
+ax4.set_xticks([0,.200,.400])
+ax4.set_xlabel('Time (s)')
 ax4.set_ylabel('Rate')
 #plt.savefig('stimulation1.pdf', bbox_inches='tight')
 #plt.show()
@@ -174,10 +175,11 @@ ax5.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='d
 ax5.set_ylim([0,1.2])
 time_plot=14*(lagStim+n*(period+delta))
 ax5.set_xlim([time_plot,time_plot+400])
-ax5.set_xticks([time_plot,time_plot+200,time_plot+400])
+ax5.set_xticks([time_plot,(time_plot+200),(time_plot+400)])
+ax5.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
 ax5.set_yticks([])
 ax5.set_ylim([0,1.2])
-ax5.set_xlabel('Time (ms)')
+ax5.set_xlabel('Time (s)')
 ax5.set_title('(D)',y=1.04)
 #ax5.set_ylabel('Rate')
 #plt.savefig('stimulation2.pdf', bbox_inches='tight')
@@ -195,9 +197,10 @@ ax6.set_ylim([0,1.2])
 time_plot=18*(lagStim+n*(period+delta))
 ax6.set_xlim([time_plot,time_plot+400])
 ax6.set_ylim([0,1.2])
-ax6.set_xticks([time_plot,time_plot+200,time_plot+400])
+ax6.set_xticks([time_plot,(time_plot+200),(time_plot+400)])
+ax6.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
 ax6.set_yticks([])
-ax6.set_xlabel('Time (ms)')
+ax6.set_xlabel('Time (s)')
 #ax6.set_ylabel('Rate')
 #plt.savefig('stimulation3.pdf', bbox_inches='tight')
 #plt.show()
@@ -260,7 +263,7 @@ ax3d.set_yticks([])
 sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=1.2))
 # fake up the array of the scalar mappable. Urgh...
 sm._A = []
-cax = fig.add_axes([0.92, 0.55, 0.02, 0.36]) # [left, bottom, width, height] 
+cax = fig.add_axes([0.92, 0.56, 0.02, 0.325]) # [left, bottom, width, height] 
 myticks=[0.0,1]
 cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
 cbar.ax.tick_params(labelsize=30) 
