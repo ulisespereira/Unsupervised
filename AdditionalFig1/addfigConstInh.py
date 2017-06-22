@@ -90,8 +90,7 @@ tau_learning=400.
 
 w_inh=w_i/n
 r1_matrix=np.ones((n,n))
-patterns=np.identity(n)
-patterns=[patterns[:,i] for i in range(n)]
+patterns=np.eye(n)
 mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp
 #integrato
@@ -107,12 +106,12 @@ tmax=times*(lagStim+n*(period+delta))+40
 wsum=2.0
 delta=10.
 period=19.
-amp_dc=0.
-amp=2.2-amp_dc
+amp_dc=-1.
+amp=3.2-amp_dc
 times=50
 mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp
-mystim.shuffle=False
+mystim.shuffle=True
 mystim.amp_dc=amp_dc
 tmax=times*(lagStim+n*(period+delta))+2000
 tmax_long=tmax
@@ -141,6 +140,8 @@ W0=[connectivity[-1] for i in range(npts)]
 theintegrator=myintegrator(delay,dt,n,tmax)
 theintegrator.fast=False
 u_ret,Wdiag_ret,Woffdiag_ret,connectivity_ret,W01_ret,t_ret=theintegrator.DDE_Norm_additive(field,x0,W0)
+
+
 #-------------------------------------------------------------------------------------
 #----------------Plotting--------------------------------------------------------------
 #---------------------------------------------------------------------------------------
@@ -258,27 +259,29 @@ ax5.plot(t,phi(u[:,:],theta,uc),lw=3)
 ax5.plot(t,elstim,'k',lw=3)
 ax5.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 ax5.set_ylim([0,1.2])
-time_plot=20*(lagStim+n*(period+delta))
+time_plot=10*(lagStim+n*(period+delta))
 ax5.set_xlim([time_plot,time_plot+400])
 ax5.set_xticks([time_plot,time_plot+200,time_plot+400])
 ax5.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
 ax5.set_yticks([])
 ax5.set_xlabel('Time (s)')
-ax5.set_title('(D)',y=1.04,x=-0.16)
+ax5.set_title('(D)',y=1.04)
 
 
 ax6.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
-ax6.plot(t_ret,phi(u_ret[:,:],theta,uc),lw=3)
+ax6.plot(t,phi(u[:,:],theta,uc),lw=3)
+ax6.plot(t,elstim,'k',lw=3)
+ax6.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 ax6.set_ylim([0,1.2])
-ax6.set_xlim([0,200])
-ax6.set_xticks([0,100,200])
-#ax6.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
+time_plot=30*(lagStim+n*(period+delta))
+ax6.set_xlim([time_plot,time_plot+400])
+ax6.set_xticks([time_plot,time_plot+200,time_plot+400])
+ax6.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
 ax6.set_yticks([])
-ax6.set_title('(E)',y=1.04)
-ax6.set_xlabel('Time (ms)')
+ax6.set_xlabel('Time (s)')
 
 
-plt.savefig('fig6.pdf',transparent=True, bbox_inches='tight')
+plt.savefig('fig6SM.pdf',transparent=True, bbox_inches='tight')
 plt.close()
 
 
