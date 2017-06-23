@@ -64,7 +64,7 @@ tau_H=2000.#200000.
 af=0.1
 bf=0.
 y0=.05*np.ones(n)
-w_i=2.
+w_i=4.3
 w_inh=w_i/n
 nu=1.
 theta=0.
@@ -119,12 +119,25 @@ W0=[0.1*np.ones((n,n)) for i in range(npts)]
 H0=[0.5*np.ones(n) for i in range(npts)]
 theintegrator=myintegrator(delay,dt,n,thetmax)
 theintegrator.fast=False
-adapt,u,connectivity,W01,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
+adapt,u,connectivity,WLast,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
 
 
 #-----------------------------------------------------------------------------------------
 #-------------------------------- Dynamics-----------------------------------------------
 #----------------------------------------------------------------------------------------
+
+#initial conditions
+
+tmaxdyn=500
+mystim.inten=0.
+a0=np.zeros((npts,n))
+x0=0.01*np.ones((npts,n))
+x0[:,0]=1.
+W0=[connectivity[-1] for i in range(npts)]
+H0=[myH[-1] for i in range(npts)]
+theintegrator=myintegrator(delay,dt,n,tmaxdyn)
+theintegrator.fast=False
+adapt_ret,u_ret,connectivity_ret,WLast_ret,myH_ret,t_ret=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
 
 #-------------------------------------------------------------------
 #-----------------Stimulation of Populations------------------------
@@ -134,17 +147,20 @@ rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25.0, 'axes.titles
 plt.rcParams.update(**rc)
 plt.rcParams['image.cmap'] = 'jet'
 
-fig = plt.figure(figsize=(18, 12))
-gs = gridspec.GridSpec(2, 2)
+fig = plt.figure(figsize=(18, 16))
+gs = gridspec.GridSpec(3, 2,height_ratios=[3,3,2])
 gs.update(wspace=0.44,hspace=0.03)
 gs0 = gridspec.GridSpec(2, 2)
-gs0.update(wspace=0.05,hspace=0.4,left=0.52,right=1.,top=0.88,bottom=0.08)
+gs1 = gridspec.GridSpec(1, 1)
+gs0.update(wspace=0.05,hspace=0.4,left=0.52,right=1.,top=0.8801,bottom=0.307)
+gs1.update(wspace=0.05,hspace=0.4,left=0.1245,right=1.,top=0.21,bottom=0.05)
 ax1A = plt.subplot(gs[0,0])
 ax1B = plt.subplot(gs[1,0])
 ax2A1 = plt.subplot(gs0[1,0])
 ax2A2 = plt.subplot(gs0[1,1])
 ax2B= plt.subplot(gs0[0,0])
 ax2C= plt.subplot(gs0[0,1])
+axLast= plt.subplot(gs1[0,0])
 
 
 colormap = plt.cm.Accent
@@ -163,19 +179,6 @@ ax2B.set_xticklabels([0.,.2,.4])
 ax2B.set_xlabel('Time (s)')
 ax2B.set_ylabel('Rate')
 ax2B.set_title('(B)',x=1.028,y=1.04)
-
-#plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-#ax2C.plot(t,phi(u[:,:],theta,uc),lw=2)
-#mystim.inten=.1
-#elstim=np.array([sum(mystim.stim(x)) for x in t])
-#ax2C.plot(t,elstim,'k',lw=3)
-#ax2C.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-#ax2C.set_ylim([0,1.2])
-#ax2C.set_xlim([4200,4600])
-#ax2C.set_xticks([4200,4400,4600])
-#ax2C.set_yticks([0,0.4,0.8,1.2])
-#ax2C.set_xlabel('Time (ms)')
-#ax2C.set_ylabel('Rate')
 
 
 ax2C.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
@@ -256,7 +259,7 @@ ax2A1.set_yticks([])
 ax2A1.set_xlabel('During stimulation')
 ax2A1.set_title('(C)',x=1.05,y=1.04)
 
-dataAfterStim=[connectivity[int(tmax/dt),:,:],connectivity[int(tmax/dt+((thetmax-tmax)/dt)/3.),:,:],connectivity[int(tmax/dt+2*((thetmax-tmax)/dt)/3.),:,:],connectivity[-1,:,:]]
+dataAfterStim=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [int(tmax/dt),int(tmax/dt+((thetmax-tmax)/dt)/3.),int(tmax/dt+((thetmax-tmax)/dt)*2./3.),-1] ]
 
 ax2A2.matshow(dataAfterStim[2], vmin=0, vmax=vmax)
 ax2A2.set_xticks([])
@@ -265,10 +268,22 @@ ax2A2.set_xlabel('After stimulation')
 sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=vmax))
 # fake up the array of the scalar mappable. Urgh...
 sm._A = []
-cax = fig.add_axes([1., 0.08, 0.02, 0.334]) # [left, bottom, width, height] 
+cax = fig.add_axes([1., 0.307, 0.02, 0.239]) # [left, bottom, width, height] 
 myticks=[0.0,.5,1.,1.5]
 cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
 cbar.ax.tick_params(labelsize=30) 
+
+axLast.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+axLast.plot(t_ret,phi(u_ret[:,:],theta,uc),lw=5)
+axLast.set_ylim([0,1.2])
+axLast.set_xlim([0,220])
+axLast.set_xticks([0,100,200])
+axLast.set_yticks([0.5,1])
+axLast.set_xlabel('Time (ms)')
+axLast.set_ylabel('Rate')
+axLast.set_title('(D)',y=1.04)
+
+
 
 plt.savefig('fig6.pdf', bbox_inches='tight')
 
