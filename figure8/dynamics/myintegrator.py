@@ -203,13 +203,12 @@ class myintegrator:
 			print "Porcentage of the simulation done:",round(100.*float(i)/float(n),2)		
 		return  np.array(adapt),np.array(rowsum),np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(mywinh),np.array(time)
 	
-	def DDE_Norm_Miller(self,f,a0,x0,W0,H0):
+	def DDE_Norm_Miller(self,f,x0,W0,H0,stim):
 		'''In this method we use the 'brute force' aditive normalization
 		and include adaptation'''
 		# this method the delay is substracting, 
 		memory=list(x0)# i.e. use the info from the past
 		dyn=list(x0)
-		adapt=list(a0)
 		myW0=list(W0)
 		myH=list(H0)
 		n=int(np.floor((self.tmax-self.D)/self.dt)+1)
@@ -217,18 +216,15 @@ class myintegrator:
 		time=list(np.linspace(0,self.D,self.npts))
 		xn=memory[-1]
 		Wn=W0[-1]
-		an=a0[-1]
 		Hn=H0[-1]
 		memory=np.array(memory)
 		myN=len(xn)
 		for i in range(0,n):
-			an=xn+self.dt*f(t,an,memory,Wn,Hn)[0]
-			xn=xn+self.dt*f(t,an,memory,Wn,Hn)[1]
-			Wn=Wn+self.dt*f(t,an,memory,Wn,Hn)[2]
-			Hn=Hn+self.dt*f(t,an,memory,Wn,Hn)[3]
+			xn=xn+self.dt*f(t,memory,Wn,Hn,stim)[0]
+			Wn=Wn+self.dt*f(t,memory,Wn,Hn,stim)[1]
+			Hn=Hn+self.dt*f(t,memory,Wn,Hn,stim)[2]
 
 			dyn.append(xn)	
-			adapt.append(an)
 			myH.append(Hn)
 			t=t+self.dt
 			if self.fast==False:
@@ -237,5 +233,5 @@ class myintegrator:
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
 #			print "Porcentage of the simulation done:",round(100.*float(i)/float(n),2)		
-		return  np.array(adapt),np.array(dyn),np.array(myW0),Wn,np.array(myH),np.array(time)
+		return  np.array(dyn),np.array(myW0),Wn,np.array(myH),np.array(time)
 	
