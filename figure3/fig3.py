@@ -7,6 +7,13 @@ from stimulus import *
 from myintegrator import *
 import cProfile
 import json
+import matplotlib.gridspec as gridspec
+
+
+plt.rc('text', usetex=True)
+#plt.rc('font', family='serif')
+plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+
 # this is the transfer function 
 def phi(x,theta,uc):
 	myresult=nu*(x-theta)
@@ -120,7 +127,7 @@ figure.subplots_adjust(wspace=.4) # vertical space bw figures
 lw=7
 learningrule1=figure.add_subplot(131)
 current=np.linspace(-2.5,7,400)
-tf,=learningrule1.plot(current,phi(current,theta,uc),'b',lw=lw,label=r'$\phi(u)$')
+tf,=learningrule1.plot(current,phi(current,theta,uc),'k',lw=lw,label=r'$\phi(u)$')
 #learnmax=learningrule1.plot(current,0.5*(1+np.tanh(-50.*(current-thres))),'m',lw=3,label=r'$\tau_{Pre}(u)=\tau_{Post}(u)$')
 learningrule1.axhline(y=thres, xmin=-2., xmax = 2., linewidth=lw,color='darkgrey',ls='dashed')
 #learningrule1.legend(tf,r'$\phi(u)$',r'$f(u)=g(u)$'), loc = (0.01, 0.8) )
@@ -128,15 +135,15 @@ learningrule1.set_ylim([0,1.2])
 learningrule1.set_xlim([-1.2,1.2])
 learningrule1.set_yticks([0.5,1])
 learningrule1.set_xticks([-1,0,1])
-learningrule1.set_xlabel(r'$u$',fontsize=45)
-learningrule1.set_ylabel(r'$\phi(u)$',fontsize=45)
+learningrule1.set_xlabel(r'Current ($u$)',fontsize=45)
+learningrule1.set_ylabel(r'Rate ($\phi(u)$)',fontsize=45)
 learningrule1.set_title('(A)',fontsize=45,y=1.06)
 #figure.savefig('transferfunction.pdf', bbox_inches='tight')
 
 #figure=plt.figure()
 learningrule2=figure.add_subplot(132)
 Fr=np.linspace(0,1,400)
-learnmax,=learningrule2.plot(Fr,0.5*(1+np.tanh(a_post*(Fr-b_post))),'g',lw=lw,label=r'$f(u)=g(u)$')
+learnmax,=learningrule2.plot(Fr,0.5*(1+np.tanh(a_post*(Fr-b_post))),'k',lw=lw,label=r'$f(u)=g(u)$')
 #learnmax=learningrule1.plot(current,0.5*(1+np.tanh(-50.*(current-thres))),'m',lw=3,label=r'$\tau_{Pre}(u)=\tau_{Post}(u)$')
 learningrule2.axvline(x=thres, ymin=-1., ymax = 2., linewidth=lw,color='darkgrey',ls='dashed')
 #learningrule2.legend( (tf,learnmax),(r'$\phi(u)$',r'$f(u)=g(u)$'), loc = (0.01, 0.8) )
@@ -144,8 +151,8 @@ learningrule2.set_ylim([0,1.2])
 learningrule2.set_xlim([0,1.])
 learningrule2.set_yticks([0.5,1.])
 learningrule2.set_xticks([0,0.5,1])
-learningrule2.set_xlabel(r'$\phi(u)$',fontsize=45)
-learningrule2.set_ylabel(r'$f(\phi(u))$',fontsize=45)
+learningrule2.set_xlabel(r'Rate ($r$)',fontsize=45)
+learningrule2.set_ylabel(r'$f(r)$',fontsize=45)
 learningrule2.set_title('(B)',fontsize=45,y=1.06)
 #figure.savefig('LR.pdf', bbox_inches='tight')
 #plt.close(figure)
@@ -158,8 +165,8 @@ current2=np.linspace(0,1,200)
 myplot=learningrule3.contourf(current1,current2,winf([current1,current2])*(1./wmax),10,alpha=0.5,cmap=plt.cm.autumn,origin='lower')
 learningrule3.axvline(x=thres, ymin=(thres-0.3)/0.7, ymax = 1, linewidth=lw,color='darkgrey',ls='dashed')
 learningrule3.axhline(y=thres, xmin=(thres-0.3)/(0.7), xmax = 1, linewidth=lw,color='darkgrey',ls='dashed')
-learningrule3.set_xlabel(r'Rate pre ($\phi(u_{j})$)')
-learningrule3.set_ylabel(r'Rate post ($\phi(u_{i})$)')
+learningrule3.set_xlabel(r'Rate pre ($r_{j}$)')
+learningrule3.set_ylabel(r'Rate post ($r_{i}$)')
 learningrule3.set_ylim([0.3,1.])
 learningrule3.set_xlim([0.3,1.])
 learningrule3.set_xticks([0.4,0.7,1])
@@ -204,6 +211,19 @@ plt.close()
 
 print 'qualitativediagram.pdf is stored'
 
+
+
+
+
+
+
+def step_function(x,offset,start,period):
+	fun  = np.zeros(len(x)) + offset
+	fun[(start<=x) * (x<=(start + period))] = 0.8 + offset 
+	return fun
+
+
+
 #----------------------------------------------------
 #------- Examples Qualitative Diagram ---------------
 #----------------------------------------------------
@@ -213,10 +233,52 @@ plt.rcParams.update(**rc)
 
 
 
-figure=plt.figure(figsize=(14,12))
-figure.subplots_adjust(wspace=.12) # vertical space bw figures
-figure.subplots_adjust(hspace=.1) # horizontal space bw figures
-dynamics1=figure.add_subplot(221)
+fig=plt.figure(figsize=(26,12))
+gs = gridspec.GridSpec(2, 3)
+gs.update(wspace=0.1,hspace=0.1)
+dynamics1 = plt.subplot(gs[0,1])
+dynamics2= plt.subplot(gs[0,2])
+dynamics4 = plt.subplot(gs[1,1])
+dynamics3= plt.subplot(gs[1,2])
+
+gs1 = gridspec.GridSpec(1, 1)
+gs1.update(wspace=0.05,hspace=0.05,left=0.,right=.3,top=0.88,bottom=0.12)
+ax1 = plt.subplot(gs1[0,0])
+
+mydel = 20
+x = np.linspace(0,140,1000)
+I1 = step_function(x,10,10,20)
+I2 = step_function(x,8.7,10  + 20 + mydel,20)
+off1 = 10 * np.ones(1000)
+off2 = 8.7 * np.ones(1000)
+
+ax1.plot(x,I1,color = 'k',lw = 3)
+ax1.plot(x,I2,color = 'k',lw = 3)
+ax1.fill_between(x,off1,I1,where  = off1<I1,alpha=0.2,edgecolor='k', facecolor='darkgrey')
+ax1.fill_between(x,off2,I2,where  = off2<I2,alpha=0.2,edgecolor='k', facecolor='darkgrey')
+#ax1.plot(x,step_function(x,7.2,10  + 40 + 2 * mydel,20),color = 'k',lw= 3)
+ax1.axis('off')
+ymin = 8.6
+ymax = 11.1
+ax1.axvline(x = 10+20,ymin =(9.5-ymin)/(ymax - ymin),ymax = (10 - ymin)/(ymax - ymin), ls = '--',color = 'gray')
+ax1.axvline(x = 10+20 + mydel,ymin =(9.5-ymin)/(ymax - ymin),ymax = (10 - ymin)/(ymax - ymin), ls = '--',color = 'gray')
+#ax1.axvline(x = 10 + 40 + mydel,ymin =(8.1-ymin)/(ymax - ymin),ymax = (8.5 - ymin)/(ymax - ymin), ls = '--',color = 'gray')
+#ax1.axvline(x = 10+40 + 2 * mydel,ymin =(8.1-ymin)/(ymax - ymin),ymax = (8.5 - ymin)/(ymax - ymin), ls = '--',color = 'gray')
+ax1.set_ylim([ymin,ymax])
+ax1.annotate("", xy=(10, 10.2), xytext=(30, 10.2),arrowprops=dict(color= 'red',arrowstyle="<->"),color = 'r')
+ax1.annotate("", xy=(30, 9.6), xytext=(30 + mydel, 9.6),arrowprops=dict(color='red',arrowstyle="<->"))
+#font = {'family': 'serif','color':  'darkred','weight': 'normal','size': 50,
+					        #}
+ax1.text(10+5, 10.3, r'$T$', fontsize = 50)
+ax1.text(10+20 + 5, 9.7, r'$\Delta$', fontsize = 50)
+ax1.text(86, 10.38, r'Stimulus', fontsize = 30)
+ax1.text(78, 10.2, r'1$^{st}$ population', fontsize = 30)
+ax1.text(86, 9.08, r'Stimulus', fontsize = 30)
+ax1.text(78, 8.9, r'2$^{nd}$ population', fontsize = 30)
+#ax1.text(20, 7.4, r'Stim. Pop. 3', fontsize = 30)
+#ax1.axhline(y = 10 + 40 + mydel,ymin =(8.1-ymin)/(ymax - ymin),ymax = (8.5 - ymin)/(ymax - ymin), ls = '--',color = 'gray')
+ax1.set_title('(A)',y=1.03,fontsize = 60)
+
 amp=1.25
 timesmax=30
 # region 1
@@ -260,18 +322,19 @@ for i in range(9):
 		dynamics1.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		dynamics1.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics1.text(1000, 0.5, r'$\Delta<D< T$', fontsize = 40)
 dynamics1.set_xlim([0,10000])
 dynamics1.set_ylim([0,.6])
 dynamics1.set_xticks([])#[0,5000,10000],['0','5','10'])
 dynamics1.set_yticks([.3,0.6])
 #plt.xlabel('Time (s)')
 dynamics1.set_ylabel('Synaptic Weights')
+dynamics1.set_title('(B)',x =1.05,y = 1.06,fontsize = 60)
 #plt.savefig('dynamicsweights1.pdf', bbox_inches='tight',transparent=True)
 #plt.show()
 #plt.close()
 
 # region 2
-dynamics2=figure.add_subplot(222)
 amp=1.8
 delta=80.
 period=20.5
@@ -316,6 +379,7 @@ for i in range(9):
 		dynamics2.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		dynamics2.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics2.text(1000, 0.5, r'$D<\Delta, T$', fontsize = 40)
 dynamics2.set_xlim([0,10000])
 #plt.xticks([0,5000,10000])
 dynamics2.set_xticks([])#0,5000,10000],['0','5','10','15'])
@@ -330,7 +394,6 @@ dynamics2.set_ylim([0,.6])
 
 
 print 'dynamicsweights2.pdf is stored'
-dynamics3=figure.add_subplot(224)
 # region 3
 delta=50.
 period=1.
@@ -355,6 +418,7 @@ for i in range(9):
 		dynamics3.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		dynamics3.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics3.text(1000, 0.5, r'$ T<D<\Delta$', fontsize = 40)
 dynamics3.set_xlim([0,10000])
 dynamics3.set_ylim([0,0.6])
 #dynamics3.xticks([0,4000,8000])
@@ -369,7 +433,6 @@ dynamics3.set_xlabel('Time (s)')
 #print 'dynamicsweights3.pdf is stored'
 
 # region 4
-dynamics4=figure.add_subplot(223)
 #amp=3.
 delta=9.
 period=7.
@@ -395,6 +458,7 @@ for i in range(9):
 		dynamics4.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		dynamics4.plot(t,connectivity[:,i,i+2],'b',lw=3)
+dynamics4.text(1000, 0.5, r'$\Delta, T<D$', fontsize = 40)
 dynamics4.set_xlim([0,10000])
 #dynamics4.xticks([0,2600,5200])
 dynamics4.set_xticks([0,5000,10000])
