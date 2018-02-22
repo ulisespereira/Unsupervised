@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import math as mt
 from tempfile import TemporaryFile
 
-''' This is a simulation of a population net with shared inhibiton and three different transfer functions'''
+''' This is a code fo find numerically the boundery between dSA and SA'''
 
 
 # this is the transfer function 
@@ -117,7 +117,7 @@ def rk4(f,y0,dt,T):
 
 n=10
 k=1
-w_i=2.0
+w_i=1.0
 w_inh=w_i/n
 nu=1.
 nu_brunel=0.4*nu
@@ -177,8 +177,8 @@ for wgrid in gridw:
 print(bifcurve)
 bifcurve=np.array(bifcurve)
 print bifcurve[:,0]
-np.save('mybifcurve.npy', bifcurve)
-bifcurve=np.load('mybifcurve.npy')
+np.save('mybifcurve2.npy', bifcurve)
+bifcurve=np.load('mybifcurve2.npy')
 plt.matshow(np.array(bifdiagram))
 plt.show()
 #
