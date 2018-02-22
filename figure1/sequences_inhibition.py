@@ -139,18 +139,6 @@ ybrunel,timebrunel=rk4(field_brunel,y0,0.1,500)
 
 #figure
 
-#connectivity matrix
-W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
-plt.matshow(W01,vmin=-0.2,vmax=0.6)
-plt.xlabel('Eff. Connectivity (II)')
-plt.xticks([])
-plt.yticks([])
-cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-cb=plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
-cb.ax.tick_params(labelsize=30)
-plt.savefig('connectivityInhib.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
 
 
 W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
@@ -168,23 +156,6 @@ plt.savefig('matrixsequences.pdf', bbox_inches='tight')
 plt.close()
 #plt.show()
 #transfer function
-
-myu=np.linspace(-.5,1.5,200)
-thepw,=plt.plot(myu,phi(myu,theta,uc),'b',lw=2.5,label='line 1')
-thetanh,=plt.plot(myu,phi_tanh(myu),'g',lw=2.5,label='line 2')
-thebrunel,=plt.plot(myu,phi_brunel(myu,theta_brunel,uc_brunel),'r',lw=2.5,label='line 3')
-plt.xlim([-.2,0.8])
-plt.ylim([0,2.0])
-plt.xticks([-.2,0.3,0.8])
-plt.yticks([1,2.0])
-plt.tick_params(labelsize=35)
-plt.xlabel('Current')
-plt.ylabel('Rate')
-plt.legend([thepw,thetanh,thebrunel],['PL','S','PNL'],loc='upper left')
-plt.savefig('transferFunctions.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
-
 
 #dynamics
 

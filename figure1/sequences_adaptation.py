@@ -116,21 +116,6 @@ ubrunel,abrunel,Ibrunel,timebrunel=rk4(field_brunel,u0,a0,I0,0.1,tsim)
 rc={'axes.labelsize': 40, 'font.size': 20, 'legend.fontsize': 23.0, 'axes.titlesize': 30}
 plt.rcParams.update(**rc)
 
-#connectivity matrix
-W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
-plt.matshow(W01)
-plt.xticks([])
-plt.yticks([])
-plt.xlabel('Connectivity Matrix')
-cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-cb=plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
-cb.ax.tick_params(labelsize=30)
-plt.savefig('connectivityAdaptation.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
-
-
-
 
 #dynamics
 

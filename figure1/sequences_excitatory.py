@@ -3,7 +3,9 @@ from scipy import sparse
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import math as mt
-''' This is a simulation of a population net with shared inhibiton and three different transfer functions'''
+import cPickle as pickle 
+
+''' This is a simulation of a population network with excitatory neurons  and three different transfer functions'''
 
 
 # this is the transfer function 
@@ -135,58 +137,106 @@ plt.rcParams.update(**rc)
 
 
 
+##connectivity matrix
+#W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
+#plt.matshow(W01,vmin=-0.2,vmax=0.6)
+#plt.xlabel('Connectivity (I)')
+#plt.xticks([])
+#plt.yticks([])
+#cax = plt.axes([0.95, 0.1, 0.03, 0.8])
+#cb=plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
+#cb.ax.tick_params(labelsize=30)
+#plt.savefig('connectivityExc.pdf', bbox_inches='tight')
+#plt.close()
+##plt.show()
+#
+
 
 #ploting the bifurcation diagram 
-
-mys=np.linspace(0,1.5,100)
-myw=np.linspace(0,1.5,100)
-upperBsequences=np.ones(100)
-lowerBsequences=np.zeros(100)
-
-plt.plot(mys,1-mys,c='k',lw=1)
-plt.fill_between(mys,1.-mys,lowerBsequences,alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
-plt.fill_between(mys,1.-mys,upperBsequences,alpha=0.5,edgecolor='k', facecolor='red')
-plt.fill_between(mys,upperBsequences,2*np.ones(100),alpha=0.5,edgecolor='k', facecolor='blue')
-
-plt.xlim([0,1.0])
-plt.ylim([0,2.])
-plt.yticks([1,2])
-plt.xticks([0,0.5,1])
-plt.tick_params(labelsize=40)
-plt.xlabel(r'$s$',fontsize='60')
-plt.ylabel(r'$w$',fontsize='60')
-plt.savefig('bifurcationdiagramExc.pdf', bbox_inches='tight')
-#plt.show()
-plt.close()
+colormap = plt.cm.Accent
 
 
 
 
+dynamics_bif = []
+
+n=14
+sdelmax=0.6
+sdelmin=0.6
+wmaxmin=0.05
+wmaxmax=0.05
+sdel=np.linspace(sdelmin,sdelmax,k)
+wmax=np.linspace(wmaxmin,wmaxmax,k)
+r1_matrix=np.ones((n,n))#np.outer(np.ones(n),np.random.normal(1,sigma_wi/n,n))
+y0_true=np.zeros(n+1)
+y0_true[0]=1.
+
+ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,350)
+uc=1e20
+ypw_linear,timepw_linear=rk4(field_true_pw,y0_true,0.1,350)
+nu=2.
+uc=1./nu
+uc=1e20
+dynamics_bif.append([(phi(ypw_true,theta,uc),timepw_true),(phi(ypw_linear,theta,uc),timepw_linear)])
 
 
-#connectivity matrix
-W01=net_matrix(wmaxmin,wmaxmax,sdelmin,sdelmax,n,k)
-plt.matshow(W01,vmin=-0.2,vmax=0.6)
-plt.xlabel('Connectivity (I)')
-plt.xticks([])
-plt.yticks([])
-cax = plt.axes([0.95, 0.1, 0.03, 0.8])
-cb=plt.colorbar(cax=cax,ticks=[-0.2,0,0.2,0.4,0.6])
-cb.ax.tick_params(labelsize=30)
-plt.savefig('connectivityExc.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
+n=14
+sdelmax=0.44
+sdelmin=0.44
+wmaxmin=0.05
+wmaxmax=0.05
+sdel=np.linspace(sdelmin,sdelmax,k)
+wsdel=np.linspace(sdelmin,sdelmax,k)
+wmax=np.linspace(wmaxmin,wmaxmax,k)
+r1_matrix=np.ones((n,n))#np.outer(np.ones(n),np.random.normal(1,sigma_wi/n,n))
+y0=theta*np.zeros(n)
+y0[0]=1.
+y0_true=np.zeros(n+1)
+y0_true[0]=1.
+
+uc=1/nu
+ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,350)
+uc=1e20
+ypw_linear,timepw_linear=rk4(field_true_pw,y0_true,0.1,350)
+nu=2.
+uc=1./nu
+uc=1e20
+dynamics_bif.append([(phi(ypw_true,theta,uc),timepw_true),(phi(ypw_linear,theta,uc),timepw_linear)])
+
+
+
+n=14
+sdelmax=0.2
+sdelmin=0.2
+wmaxmin=0.51
+wmaxmax=0.51
+sdel=np.linspace(sdelmin,sdelmax,k)
+wsdel=np.linspace(sdelmin,sdelmax,k)
+wmax=np.linspace(wmaxmin,wmaxmax,k)
+r1_matrix=np.ones((n,n))#np.outer(np.ones(n),np.random.normal(1,sigma_wi/n,n))
+y0=theta*np.zeros(n)
+y0[0]=1.
+y0_true=np.zeros(n+1)
+y0_true[0]=1.
+uc=1/nu
+ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,500)
+uc=1e20
+ypw_linear,timepw_linear=rk4(field_true_pw,y0_true,0.1,500)
+nu=2.
+uc=1./nu
+uc=1e20
+dynamics_bif.append([(phi(ypw_true,theta,uc),timepw_true),(phi(ypw_linear,theta,uc),timepw_linear)])
+
+pickle.dump(dynamics_bif,open('dynamics_bif.p','wb'))
+
 
 
 
 
 #dynamics
-rc={'axes.labelsize': 30, 'font.size': 25, 'legend.fontsize': 30.0, 'axes.titlesize': 30}
-plt.rcParams.update(**rc)
 
 figure=plt.figure()
 figure.subplots_adjust(hspace=.1) # vertical space bw figures
-colormap = plt.cm.Accent
 tanh=figure.add_subplot(311)
 plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
 tanh.plot(timetanh_true,phi_tanh(ytanh_true[:,0:n]),lw=2)
@@ -219,109 +269,3 @@ plt.savefig('sequencesExcitatory.pdf', bbox_inches='tight')
 plt.close()
 
 
-n=14
-sdelmax=0.6
-sdelmin=0.6
-wmaxmin=0.05
-wmaxmax=0.05
-sdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-r1_matrix=np.ones((n,n))#np.outer(np.ones(n),np.random.normal(1,sigma_wi/n,n))
-y0_true=np.zeros(n+1)
-y0_true[0]=1.
-
-ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,350)
-uc=1e20
-ypw_linear,timepw_linear=rk4(field_true_pw,y0_true,0.1,350)
-nu=2.
-uc=1./nu
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(timepw_true,phi(ypw_true[:,0:n],theta,uc),lw=2)
-uc=1e20
-plt.plot(timepw_linear,phi(ypw_linear[:,0:n],theta,uc),'k--',lw=2,alpha=0.6)
-plt.xlim([0,350])
-plt.xticks([100,200,300])
-plt.ylim([0,10.])
-plt.yticks([0,5,10.])
-plt.tick_params(labelsize=35)
-plt.xlabel('Time (ms)')
-plt.ylabel('Rate')
-plt.savefig('sequencesExcitatoryBifDiag.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
-
-
-n=14
-sdelmax=0.44
-sdelmin=0.44
-wmaxmin=0.05
-wmaxmax=0.05
-sdel=np.linspace(sdelmin,sdelmax,k)
-wsdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-r1_matrix=np.ones((n,n))#np.outer(np.ones(n),np.random.normal(1,sigma_wi/n,n))
-y0=theta*np.zeros(n)
-y0[0]=1.
-y0_true=np.zeros(n+1)
-y0_true[0]=1.
-
-uc=1/nu
-ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,350)
-uc=1e20
-ypw_linear,timepw_linear=rk4(field_true_pw,y0_true,0.1,350)
-nu=2.
-uc=1./nu
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(timepw_true,phi(ypw_true[:,0:n],theta,uc),lw=2)
-uc=1e20
-plt.plot(timepw_linear,phi(ypw_linear[:,0:n],theta,uc),'k--',lw=2,alpha=0.6)
-plt.xlim([0,350])
-plt.xticks([100,200,300])
-plt.yticks([0,1,2])
-plt.tick_params(labelsize=35)
-#plt.ylim([0,1.1])
-plt.xlabel('Time (ms)')
-#plt.ylabel('Rate')
-plt.savefig('sequencesExcitatoryBifDiag2.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
-
-
-
-
-n=14
-sdelmax=0.2
-sdelmin=0.2
-wmaxmin=0.51
-wmaxmax=0.51
-sdel=np.linspace(sdelmin,sdelmax,k)
-wsdel=np.linspace(sdelmin,sdelmax,k)
-wmax=np.linspace(wmaxmin,wmaxmax,k)
-r1_matrix=np.ones((n,n))#np.outer(np.ones(n),np.random.normal(1,sigma_wi/n,n))
-y0=theta*np.zeros(n)
-y0[0]=1.
-y0_true=np.zeros(n+1)
-y0_true[0]=1.
-
-
-uc=1/nu
-ypw_true,timepw_true=rk4(field_true_pw,y0_true,0.1,500)
-uc=1e20
-ypw_linear,timepw_linear=rk4(field_true_pw,y0_true,0.1,500)
-nu=2.
-uc=1./nu
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(timepw_true,phi(ypw_true[:,0:n],theta,uc),lw=2)
-uc=1e20
-plt.rc('xtick',labelsize=28)
-plt.plot(timepw_linear,phi(ypw_linear[:,0:n],theta,uc),'k--',lw=2,alpha=0.6)
-plt.xlim([0,350])
-plt.ylim([0,10.])
-plt.xticks([100,200,300])
-plt.yticks([0,5,10])
-plt.tick_params(labelsize=35)
-plt.xlabel('Time (ms)')
-#plt.ylabel('Rate')
-plt.savefig('sequencesExcitatoryBifDiag3.pdf', bbox_inches='tight')
-plt.close()
-#plt.show()
