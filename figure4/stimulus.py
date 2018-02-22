@@ -6,6 +6,7 @@ class stimulus:
 		self.patterns=patterns
 		self.tstim=period # duration of stimulation
 		self.inten=0.1
+		self.amp_dc=0.
 		self.lag=lag # duration inter chunks of stimulations
 		self.delta=delta # duration intra each pop stimulation
 		self.delay_begin=50
@@ -24,19 +25,19 @@ class stimulus:
 
 		t_actual=t-self.delay_begin
 		if t<self.delay_begin :
-			return np.zeros(self.n)
+			return self.amp_dc*np.ones(self.n)
 		elif t>self.T_total:
-			return np.zeros(self.n)
+			return self.amp_dc*np.ones(self.n)
 		else:
 			#times
 			t_rs_rep=t_actual-self.T_one_rep*np.floor(t_actual/self.T_one_rep) # how many time after the last repetition
 			t_rs_stim=t_rs_rep-self.T_one_stim*np.floor(t_rs_rep/self.T_one_stim) #how many time after last stimulation
 			if t_rs_rep>(self.n*self.T_one_stim) and t_rs_rep<self.T_one_rep:
-				return np.zeros(self.n)
+				return self.amp_dc*np.ones(self.n)
 			else:
 				if t_rs_stim>self.tstim and t_rs_stim<=self.T_one_stim:
-					return np.zeros(self.n)
+					return self.amp_dc*np.ones(self.n)
 				else:
 					stim_index=int(np.floor(t_rs_rep/self.T_one_stim)) # stimulation index
-					return self.inten*self.patterns[stim_index]
+					return self.inten*self.patterns[stim_index]+self.amp_dc*np.ones(self.n)
 		
