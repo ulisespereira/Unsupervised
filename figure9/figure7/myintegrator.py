@@ -77,7 +77,7 @@ class myintegrator:
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
 			print "Porcentage of the simulation done:",round(100.*float(i)/float(n),2)		
-		return  np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(time)
+		return  np.array(rowsum),np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(time)
 	
 	def DDE_Norm_additive_adapt(self,f,a0,x0,W0):
 		'''In this method we use the 'brute force' aditive normalization
@@ -157,7 +157,8 @@ class myintegrator:
 		return  np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(mywinh),np.array(time)
 	
 	def DDE_Norm_additive_adapt_inh(self,f,a0,x0,W0,winh0):
-		'''In this method include adaptation IE homeostatic plasticity'''
+		'''In this method we use the 'brute force' aditive normalization
+		and include adaptation'''
 		# this method the delay is substracting, 
 		memory=list(x0)# i.e. use the info from the past
 		dyn=list(x0)
@@ -203,7 +204,8 @@ class myintegrator:
 		return  np.array(adapt),np.array(rowsum),np.array(dyn),np.array(myW_diag),np.array(myW_off_diag),np.array(myW0),Wn,np.array(mywinh),np.array(time)
 	
 	def DDE_Norm_Miller(self,f,a0,x0,W0,H0):
-		'''In this method Use Normalization Proposed by Taro and KD Miller'''
+		'''In this method we use the 'brute force' aditive normalization
+		and include adaptation'''
 		# this method the delay is substracting, 
 		memory=list(x0)# i.e. use the info from the past
 		dyn=list(x0)
@@ -234,6 +236,6 @@ class myintegrator:
 			time.append(t)
 			memory=np.delete(memory,(0),axis=0)
 			memory=np.vstack((memory,xn))
-			print "Porcentage of the simulation done:",round(100.*float(i)/float(n),2)		
+#			print "Porcentage of the simulation done:",round(100.*float(i)/float(n),2)		
 		return  np.array(adapt),np.array(dyn),np.array(myW0),Wn,np.array(myH),np.array(time)
 	

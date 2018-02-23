@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.gridspec as gridspec
 from scipy import sparse
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ from stimulus import *
 from myintegrator import *
 import cProfile
 import json
-import matplotlib.gridspec as gridspec
+
 # this is the transfer function 
 def phi(x,theta,uc):
 	myresult=nu*(x-theta)
@@ -15,12 +16,13 @@ def phi(x,theta,uc):
 	myresult[x>uc]=nu*(uc-theta)
 	return myresult
 
-def phi_tanh(x):
-	return 0.5*(1+np.tanh(a1*(x+b1)))
-
-def mytauInv(x): #time scale function synapses
-	myresult=np.zeros(len(x))
-	myresult[x>thres]=1/tau_learning
+def mytau(x): #time scale function synapses
+	myresult=(1e50)*np.ones(len(x))
+	myresult[x>thres]=tau_learning
+	#print x>thres
+	#print x
+	#myresult=(1e8)*(1.+np.tanh(-50.*(x-thres)))+tau_learning
+	#print myresult
 	return myresult
 
 def winf(x_hist):
@@ -28,8 +30,7 @@ def winf(x_hist):
 	post_u=phi(x_hist[-1],theta,uc)
 	#parameters
 	n=len(pre_u)
-	vec_pre=0.5*(np.ones(n)+np.tanh(a_pre*(pre_u-b_pre)))
-	return (wmax/2.)*np.outer((np.ones(n)+np.tanh(a_post*(post_u-b_post))),vec_pre)
+	return (wmax/4.)*np.outer((np.ones(n)+np.tanh(a_post*(post_u-b_post))),(np.ones(n)+np.tanh(a_pre*(pre_u-b_pre))))
 
 #function for the field
 #x_hist is the 'historic' of the x during the delay period the zero is the oldest and the -1 is the newest
@@ -37,324 +38,249 @@ def winf(x_hist):
 def tauWinv(x_hist):
 	pre_u=x_hist[0]
 	post_u=x_hist[-1]
-	n=len(pre_u)
 	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
-	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
-def F(u):
-	return .5*(1.+np.tanh(af*(u-bf)))
+	return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
 
-def field(t,a,x_hist,W,H):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
-	n=len(pre_u)
-	conn_matrix=(W.T*H).T
-	field_u=(1/tau)*(mystim.stim(t)+conn_matrix.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))#-a
-	field_a=0.#in the paper we are not using adaptation during learning
-	field_H=(H*(1.-(phi(post_u,theta,uc)/y0))-H**2)/tau_H
-	field_w=np.multiply(tauWinv(x_hist),winf(x_hist)-W)
-	return field_a,field_u,field_w,field_H
+
+def field(t,x_hist,W):
+	field_u=(1/tau)*(mystim.stim(t)+W.dot(phi(x_hist[-1],theta,uc))-x_hist[-1]-w_inh*np.dot(r1_matrix,phi(x_hist[-1],theta,uc)))
+	field_w=np.multiply(tauWinv(x_hist),(-W+winf(x_hist)))
+	return field_u,field_w
+
+
+
 
 #This are a the parameters of the simulation
+#-------------------------------------------------------------------------------------
+#------------------------Parameter Model----------------------------------------------
+#-------------------------------------------------------------------------------------
+
 
 #open parameters of the model
 n=10 #n pop
-delay=15.3
+delay=15.3 #multilpl:es of 9!
 tau=10.   #timescale of populations
-tau_H=2000.#200000.
-af=0.1
-bf=0.
-y0=.05*np.ones(n)
-w_i=4.3
-w_inh=w_i/n
+w_i=2.
 nu=1.
 theta=0.
 uc=1.
-wmax=1.6
+wmax=2.5
 thres=0.6
-beta=1.6
-tau_a=10.
 #parameters stimulation
 dt=0.5
-lagStim=400.
-times=235
-amp=3.5
+lagStim=500.
 
 
-delta=7.
-period=14.
+amp=10.
+delta=15.3
+period=40.
+times=240
 
 bf=10.
 xf=0.7
+
 a_post=bf
 b_post=xf
 a_pre=bf
 b_pre=xf
-tau_learning=400.#30000.
-
-a1=6.
-b1=-0.25
+tau_learning=400.
 
 
-#-------------------------------------------------------------------
-#-----------------Stimulation of Populations------------------------
-#-------------------------------------------------------------------
 
-# settin`g up the simulation 
 
+w_inh=w_i/n
 r1_matrix=np.ones((n,n))
 patterns=np.identity(n)
 patterns=[patterns[:,i] for i in range(n)]
 mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp
-
-#integrator
+#integrato
 npts=int(np.floor(delay/dt)+1)         # points delay
-tmax=times*(lagStim+n*(period+delta))+100.+mystim.delay_begin
-thetmax=tmax+30*tau_H
+tmax=times*(lagStim+n*(period+delta))+40
 
+
+
+#-------------------------------------------------------
+#-------------------stimulation Network------------------
+#--------------------------------------------------------
+
+wsum=2.0
+delta=10.
+period=19.
+amp_dc=0.
+amp=2.2-amp_dc
+times=50
+mystim=stimulus(patterns,lagStim,delta,period,times)
+mystim.inten=amp
+mystim.shuffle=False
+mystim.amp_dc=amp_dc
+tmax=times*(lagStim+n*(period+delta))+2000
+tmax_long=tmax
 #initial conditions
-a0=np.zeros((npts,n))
 x0=0.01*np.ones((npts,n))
-W0=[0.1*np.ones((n,n)) for i in range(npts)]
-H0=[0.5*np.ones(n) for i in range(npts)]
-theintegrator=myintegrator(delay,dt,n,thetmax)
+W0=[(wsum/n)*np.ones((n,n)) for i in range(npts)]
+theintegrator=myintegrator(delay,dt,n,tmax)
 theintegrator.fast=False
-adapt,u,connectivity,WLast,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
+
+u,Wdiag,Woffdiag,connectivity,W01,t=theintegrator.DDE_Norm_additive(field,x0,W0)
 
 
-#-----------------------------------------------------------------------------------------
-#-------------------------------- Dynamics-----------------------------------------------
-#----------------------------------------------------------------------------------------
 
+
+#retrieval
+amp=0.
+times=300
+mystim=stimulus(patterns,lagStim,delta,period,times)
+mystim.inten=amp
+mystim.amp_dc=0.
+tmax=500
 #initial conditions
-
-tmaxdyn=500
-mystim.inten=0.
-a0=np.zeros((npts,n))
-x0=0.01*np.ones((npts,n))
+x0=np.zeros((npts,n))
 x0[:,0]=1.
 W0=[connectivity[-1] for i in range(npts)]
-H0=[myH[-1] for i in range(npts)]
-theintegrator=myintegrator(delay,dt,n,tmaxdyn)
+theintegrator=myintegrator(delay,dt,n,tmax)
 theintegrator.fast=False
-adapt_ret,u_ret,connectivity_ret,WLast_ret,myH_ret,t_ret=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
+u_ret,Wdiag_ret,Woffdiag_ret,connectivity_ret,W01_ret,t_ret=theintegrator.DDE_Norm_additive(field,x0,W0)
+#-------------------------------------------------------------------------------------
+#----------------Plotting--------------------------------------------------------------
+#---------------------------------------------------------------------------------------
 
-#-------------------------------------------------------------------
-#-----------------Stimulation of Populations------------------------
-#-------------------------------------------------------------------
-
-rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25.0, 'axes.titlesize': 35}
+rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25, 'axes.titlesize': 35}
 plt.rcParams.update(**rc)
 plt.rcParams['image.cmap'] = 'jet'
-
-fig = plt.figure(figsize=(18, 16))
-gs = gridspec.GridSpec(3, 2,height_ratios=[3,3,2])
-gs.update(wspace=0.44,hspace=0.03)
-gs0 = gridspec.GridSpec(2, 2)
-gs1 = gridspec.GridSpec(1, 1)
-gs0.update(wspace=0.05,hspace=0.4,left=0.52,right=1.,top=0.8801,bottom=0.307)
-gs1.update(wspace=0.05,hspace=0.4,left=0.1245,right=1.,top=0.21,bottom=0.05)
-ax1A = plt.subplot(gs[0,0])
-ax1B = plt.subplot(gs[1,0])
-ax2A1 = plt.subplot(gs0[1,0])
-ax2A2 = plt.subplot(gs0[1,1])
-ax2B= plt.subplot(gs0[0,0])
-ax2C= plt.subplot(gs0[0,1])
-axLast= plt.subplot(gs1[0,0])
-
-
 colormap = plt.cm.Accent
 
-ax2B.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
-ax2B.plot(t,phi(u[:,:],theta,uc),lw=3)
+fig = plt.figure(figsize=(18, 12))
+gs = gridspec.GridSpec(2, 3)
+gs.update(wspace=0.3,hspace=0.43)
+gs0 = gridspec.GridSpec(2, 2)
+gs0.update(wspace=0.1,hspace=0.1,left=0.67,right=0.91,top=0.88,bottom=0.56)
+ax1 = plt.subplot(gs[0,0])
+ax2 = plt.subplot(gs[0,1])
+ax3a = plt.subplot(gs0[0,0])
+ax3b = plt.subplot(gs0[0,1])
+ax3c = plt.subplot(gs0[1,0])
+ax3d = plt.subplot(gs0[1,1])
+ax4 = plt.subplot(gs[1,0])
+ax5 = plt.subplot(gs[1,1])
+ax6 = plt.subplot(gs[1,2])
+
+
 mystim.inten=.1
+ax1.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax1.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
-ax2B.plot(t,elstim,'k',lw=3)
-ax2B.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-ax2B.set_ylim([0,1.2])
-ax2B.set_xlim([0,450])
-ax2B.set_yticks([0.5,1])
-ax2B.set_xticks([0,200,400])
-ax2B.set_xticklabels([0.,.2,.4])
-ax2B.set_xlabel('Time (s)')
-ax2B.set_ylabel('Rate')
-ax2B.set_title('(B)',x=1.028,y=1.04)
+ax1.plot(t,elstim,'k',lw=3)
+ax1.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax1.set_xlim([12000,16000])
+ax1.set_yticks([0.5,1])
+ax1.set_xticks([12000,14000,16000])
+ax1.set_xticklabels(['12','14','16'])
+ax1.set_ylim([0,1.2])
+ax1.set_xlabel('Time (s)')
+ax1.set_ylabel('Rate')
+ax1.set_title('(A)',y=1.04)
 
-
-ax2C.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
-ax2C.plot(t,phi(u[:,:],theta,uc),lw=3)
-mystim.inten=.1
-elstim=np.array([sum(mystim.stim(x)) for x in t])
-ax2C.plot(t,elstim,'k',lw=3)
-ax2C.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-ax2C.set_xlim([45650,46100])
-ax2C.set_xticks([45700,45900,46100])
-ax2C.set_xticklabels([45.7,45.9,46.1])
-ax2C.set_ylim([0,1.2])
-ax2C.set_yticks([])
-ax2C.set_xlabel('Time (s)')
-#ax2C.set_ylabel('Rate')
-
-#----------------------------------------------------------------------
-#------------Synaptic Weights------------------------------------------
-#----------------------------------------------------------------------
-
+###dynamics synapses
 
 for i in range(10):
-		ax1A.plot(t,connectivity[:,i,i],'c',lw=3)
+		ax2.plot(t,connectivity[:,i,i],'c',lw=3)
 for i in range(0,9):
-		ax1A.plot(t,connectivity[:,i+1,i],'y',lw=3)
+		ax2.plot(t,connectivity[:,i+1,i],'y',lw=3)
 for i in range(8):
-		ax1A.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		ax2.plot(t,connectivity[:,i+2,i],'g',lw=3)
 for i in range(9):
-		ax1A.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		ax2.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
-		ax1A.plot(t,connectivity[:,i,i+2],'b',lw=3)
-
-
-ax1A.set_xticks([])
-ax1A.axvline(x=tmax,ymin=0,ymax=2.,linewidth=2,ls='--',color='gray',alpha=0.7)
-#ax1A.set_xticklabels([0,50,100,150])
-ax1A.set_ylim([0,1.8])
-ax1A.set_xlim([0,200000])
-ax1A.set_yticks([0,0.5,1.,1.5])
-#ax1A.set_xlabel('Time (s)')
-ax1A.set_ylabel('Synaptic Weights')
-ax1A.set_title('(A)',y=1.04)
-
-#------------------------------------------------------------------------
-#-------------Homeostatic Variable --------------------------------------
-#------------------------------------------------------------------------
-
-
-ax1B.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
-ax1B.plot(t,myH[:],lw=3)
-ax1B.axvline(x=tmax,ymin=0,ymax=2.,linewidth=2,ls='--',color='gray',alpha=0.7)
-ax1B.set_ylim([0,1.2])
-ax1B.set_yticks([0.5,1.])
-ax1B.set_xlim([0,200000])
-ax1B.set_xticks([0,50000,100000,150000,200000])
-ax1B.set_xticklabels([0,50,100,150,200])
-ax1B.set_xlabel('Time (s)')
-ax1B.set_ylabel('H')
-#ax1B.savefig('HdynamicsLearning.pdf', bbox_inches='tight')
-#ax1B.xlim([0,50000])
-#ax1B.xticks([0,10000,20000,30000,40000,50000],[0,10,20,30,40,50])
-#ax1B.xlabel('Time (s)')
-#ax1B.ylabel('H')
-#ax1B.savefig('HdynamicsLearningzoom.pdf', bbox_inches='tight')
-#ax1B.show()
-#ax1B.close()
+		ax2.plot(t,connectivity[:,i,i+2],'b',lw=3)
+#plt.xlim([0,tmax_long])
+ax2.set_xticks([0,10000,20000,30000,40000])
+ax2.set_yticks([0,1.,2])
+ax2.set_xlim([0,40000])
+ax2.set_ylim([0,2.1])
+ax2.set_xticklabels([0,10,20,30,40])
+ax2.set_xlabel('Time (s)')
+ax2.set_ylabel('Synaptic Weights')
+ax2.set_title('(B)',y=1.04)
 
 
 
 
 
-
-vmax=wmax
-dataStim=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [0,int((tmax/dt)/3.),int((tmax/dt)*2./3.),int(tmax/dt)] ]
-ax2A1.matshow(dataStim[2], vmin=0, vmax=vmax)
-ax2A1.set_xticks([])
-ax2A1.set_yticks([])
-ax2A1.set_xlabel('During stimulation')
-ax2A1.set_title('(C)',x=1.05,y=1.04)
-
-dataAfterStim=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [int(tmax/dt),int(tmax/dt+((thetmax-tmax)/dt)/3.),int(tmax/dt+((thetmax-tmax)/dt)*2./3.),-1] ]
-
-ax2A2.matshow(dataAfterStim[2], vmin=0, vmax=vmax)
-ax2A2.set_xticks([])
-ax2A2.set_yticks([])
-ax2A2.set_xlabel('After stimulation')
+vmax=2.
+ax3a.matshow(connectivity[0,:,:],vmin=0,vmax=vmax)
+ax3a.set_title('(C)',y=1.08,x=1.06)
+ax3a.set_xticks([])
+ax3a.set_yticks([])
+ax3b.matshow(connectivity[int(tmax_long/(3*dt)),:,:],vmin=0,vmax=vmax)
+ax3b.set_xticks([])
+ax3b.set_yticks([])
+ax3c.matshow(connectivity[int((2*tmax_long)/(3*dt)),:,:],vmin=0,vmax=vmax)
+ax3c.set_xticks([])
+ax3c.set_yticks([])
+ax3d.matshow(connectivity[int(tmax_long/dt),:,:],vmin=0,vmax=vmax)
+ax3d.set_xticks([])
+ax3d.set_yticks([])
 sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=vmax))
 # fake up the array of the scalar mappable. Urgh...
 sm._A = []
-cax = fig.add_axes([1., 0.307, 0.02, 0.239]) # [left, bottom, width, height] 
-myticks=[0.0,.5,1.,1.5]
+cax = fig.add_axes([0.92, 0.56, 0.02, 0.325]) # [left, bottom, width, height] 
+myticks=[0.0,1,2]
 cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
 cbar.ax.tick_params(labelsize=30) 
 
-axLast.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
-axLast.plot(t_ret,phi(u_ret[:,:],theta,uc),lw=5)
-axLast.set_ylim([0,1.2])
-axLast.set_xlim([0,220])
-axLast.set_xticks([0,100,200])
-axLast.set_yticks([0.5,1])
-axLast.set_xlabel('Time (ms)')
-axLast.set_ylabel('Rate')
-axLast.set_title('(D)',y=1.04)
+#ax3.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+#ax3.plot(t_ret,phi(u_ret[:,:],theta,uc),lw=3)
+#ax3.set_ylim([0,1.2])
+#ax3.set_xlim([0,500])
+#ax3.set_yticks([0,0.4,0.8,1.2])
+#ax3.set_xlabel('Time (ms)')
+#ax3.set_ylabel('Rate')
+
+## Dynamics 
+mystim.inten=.1
+ax4.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax4.plot(t,phi(u[:,:],theta,uc),lw=3)
+elstim=np.array([sum(mystim.stim(x)) for x in t])
+ax4.plot(t,elstim,'k',lw=3)
+ax4.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax4.set_ylim([0,1.2])
+ax4.set_xlim([0,400])
+ax4.set_yticks([0,0.5,1.])
+ax4.set_xticks([0,200,400])
+ax4.set_xticklabels([0,.2,.4])
+ax4.set_xlabel('Time (s)')
+ax4.set_ylabel('Rate')
 
 
+ax5.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax5.plot(t,phi(u[:,:],theta,uc),lw=3)
+ax5.plot(t,elstim,'k',lw=3)
+ax5.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
+ax5.set_ylim([0,1.2])
+time_plot=20*(lagStim+n*(period+delta))
+ax5.set_xlim([time_plot,time_plot+400])
+ax5.set_xticks([time_plot,time_plot+200,time_plot+400])
+ax5.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
+ax5.set_yticks([])
+ax5.set_xlabel('Time (s)')
+ax5.set_title('(D)',y=1.04,x=-0.16)
 
-plt.savefig('fig6.pdf', bbox_inches='tight')
+
+ax6.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax6.plot(t_ret,phi(u_ret[:,:],theta,uc),lw=3)
+ax6.set_ylim([0,1.2])
+ax6.set_xlim([0,200])
+ax6.set_xticks([0,100,200])
+#ax6.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
+ax6.set_yticks([])
+ax6.set_title('(E)',y=1.04)
+ax6.set_xlabel('Time (ms)')
 
 
+plt.savefig('fig6.pdf',transparent=True, bbox_inches='tight')
+plt.close()
 
 
-
-
-
-
-
-
-
-#--------------------------------------------------------------------------------
-#-----------The Connectivity Matrices--------------------------------------------
-#--------------------------------------------------------------------------------
-
-## connectivity matrix during the stimulation
-#data=[connectivity[0,:,:],connectivity[int((tmax/dt)/3.),:,:],connectivity[int(2*(tmax/dt)/3.),:,:],connectivity[int(tmax/dt),:,:]]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-##cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-##fig.colorbar(im, cax=cax)
-#plt.savefig('matrixstimulationH.pdf', bbox_inches='tight')
-#print 'matrixstimulationH.pdf',' is saved'
-##plt.show()
-#plt.close()
-#
-##matrix connectivity and homoestatic variable during stimulation
-#data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [0,int((tmax/dt)/3.),int((tmax/dt)*2./3.),int(tmax/dt)] ]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-##cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-##fig.colorbar(im, cax=cax)
-#plt.savefig('matrixstimulationHhom.pdf', bbox_inches='tight')
-#print 'matrixstimulationHhom.pdf',' is saved'
-##plt.show()
-#plt.close()
-#
-## matrix connectivity after stimulation
-#data=[connectivity[int(tmax/dt),:,:],connectivity[int(tmax/dt+((thetmax-tmax)/dt)/3.),:,:],connectivity[int(tmax/dt+2*((thetmax-tmax)/dt)/3.),:,:],connectivity[-1,:,:]]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-##cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-##fig.colorbar(im, cax=cax)
-#plt.savefig('matrixstimulationHFinal.pdf', bbox_inches='tight')
-#print 'matrixstimulationHFinal.pdf',' is saved'
-##plt.show()
-#plt.close()
-#
-## matrix connectivity and homeostatic after stimulation 
-#data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [int(tmax/dt),int(tmax/dt+((thetmax-tmax)/dt)/3.),int(tmax/dt+((thetmax-tmax)/dt)*2./3.),-1] ]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-#cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-#fig.colorbar(im, cax=cax,ticks=[0,1.,2.])
-plt.savefig('fig6.pdf', bbox_inches='tight')
-#print 'matrixstimulationHhomFinal.pdf',' is saved'
-##plt.show()
-#plt.close()
 
 
