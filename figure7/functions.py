@@ -21,20 +21,19 @@ b1_inh=0.15
 wIE=1.
 
 #parameters homeostatic plasticity
-r0=.065*np.ones(n)
 tau_WEI=100. #fastest?
 
 #parameters stimulation
 dt=0.5
 lagStim=400. # before presentation
-times=230 #times stimulation
+times=230#230 #times stimulation
 amp=3.5 # amplitde current 
 delta=31.3 # time between stim
 period=20. # peridod stim
 
 # parameters GHLR f=g
 delay=15.3 # delay pre-post
-wmax=1.6 # max learned
+wmax=2.61#1.6 # max learned
 thres=0.6
 bf=10. #slope
 xf=0.7 # threshold
