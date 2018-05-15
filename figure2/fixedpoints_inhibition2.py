@@ -117,7 +117,7 @@ def rk4(f,y0,dt,T):
 
 n=10
 k=1
-w_i=1.0
+w_i=2.#1.0
 w_inh=w_i/n
 nu=1.
 nu_brunel=0.4*nu
@@ -151,10 +151,10 @@ tsim=100.
 ##true
 ##ypw_true_approx,timepw_true_approx=rk4(field_true_pw_approx,y0_true,0.1,tsim)
 #
-numpoints=40
+numpoints=200
 bifdiagram=[]
-gridw=np.linspace(0.05,2.,numpoints)
-grids=np.linspace(0.05,2.,numpoints)
+gridw=np.linspace(0.01,2.,numpoints)
+grids=np.linspace(0.01,2.,numpoints)
 bifcurve=[]
 for wgrid in gridw:
 	wmax=np.linspace(wgrid,wgrid,k)

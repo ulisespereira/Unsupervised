@@ -131,7 +131,13 @@ y0_true[0]=1.
 #y0_true[3]=1.2
 
 
-bifcurve=np.load('mybifcurve.npy')
+bifcurve=np.load('mybifcurve2.npy')
+bif_s =  bifcurve[:,0]
+bif_w =  bifcurve[:,1]
+
+# erasing spurious points
+bif_S = bif_s[0.01<bif_s]
+bif_W = bif_w[0.01<bif_s]
 
 #figure
 
@@ -145,13 +151,13 @@ plt.rcParams.update(**rc)
 
 mys=np.linspace(0,2.,100)
 myw=np.linspace(0,2.,100)
-upperBsequences=np.array([1+w_i*(1+0.)/n for j in range(0,len(bifcurve[:,1]))])
+upperBsequences=np.array([1+w_i*(1+0.)/n for j in range(0,len(bif_W))])
 
-plt.plot(bifcurve[:,0],bifcurve[:,1],'k')
+plt.plot(bif_S,bif_W,'k')
 plt.plot(mys,np.array([1+(w_i+0.)/n for i in range(0,100)]),c='k',lw=1)
-plt.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red')
-plt.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
-plt.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
+plt.fill_between(bif_S,bif_W,upperBsequences,alpha=0.5,edgecolor='k', facecolor='red')
+plt.fill_between(bif_S,np.zeros(len(bif_W)),bif_W,alpha=0.5, facecolor='darkgrey',linewidth=0)
+plt.fill_between(np.linspace(0,bif_S[-1],100),np.zeros(100),(1.+(w_i+0.)/n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
 
 
 colormap = plt.cm.winter 
