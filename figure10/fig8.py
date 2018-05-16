@@ -144,7 +144,7 @@ for l in range(len(the_mydyn[0])):
 	elif l==1:
 		list_axis_low[l].set_yticks([])
 		list_axis_low[l].set_xticks([])			
-		list_axis_low[l].text(xposlabels_2col,yposlabels, 'PA/SA',fontsize=sfont)
+		list_axis_low[l].text(xposlabels_2col,yposlabels, 'PA',fontsize=sfont)
 		list_axis_low[l].set_xlim([0,500])
 	elif l==2:
 		list_axis_low[l].set_yticks([0.5,1.])
@@ -160,7 +160,7 @@ for l in range(len(the_mydyn[0])):
 		list_axis_low[l].set_xticks([0,200,400])			
 		#list_axis_low[l].set_xticklabels(['0','0.2','0.4'])
 		list_axis_low[l].set_xlabel('Time (ms)',fontsize=sfont)
-		list_axis_low[l].text(xposlabels_2col,yposlabels, 'PA',fontsize=sfont)
+		list_axis_low[l].text(xposlabels_2col,yposlabels, 'PA/SA',fontsize=sfont)
 		list_axis_low[l].set_xlim([0,500])
 		list_axis_low[l].tick_params(axis='both', which='major', labelsize=stick)
 # high  inhibition
@@ -180,7 +180,7 @@ for l in range(len(the_mydyn[1])):
 	elif l==1:
 		list_axis_high[l].set_yticks([])
 		list_axis_high[l].set_xticks([])			
-		list_axis_high[l].text(xposlabels_2col,yposlabels, 'PA/SA',fontsize=sfont)
+		list_axis_high[l].text(xposlabels_2col,yposlabels, 'PA',fontsize=sfont)
 		list_axis_high[l].set_xlim([0,500])
 	elif l==2:
 		list_axis_high[l].set_yticks([0.5,1.])
@@ -195,7 +195,7 @@ for l in range(len(the_mydyn[1])):
 		list_axis_high[l].set_xticks([0,200,400])			
 		#list_axis_high[l].set_xticklabels(['0','200','400'])
 		list_axis_high[l].set_xlabel('Time (ms)',fontsize=sfont)
-		list_axis_high[l].text(xposlabels_2col,yposlabels, 'PA',fontsize=sfont)
+		list_axis_high[l].text(xposlabels_2col,yposlabels, 'PA/SA',fontsize=sfont)
 		list_axis_high[l].set_xlim([0,500])
 		list_axis_high[l].tick_params(axis='both', which='major', labelsize=stick)
 
@@ -208,7 +208,14 @@ for l in range(len(the_mydyn[1])):
 
 
 mywi=1. # value wi
-bifcurve=np.load('mybifcurve2.npy')
+bifcurve=np.load('mybifcurve1.npy')
+bif_s =  bifcurve[:,0]
+bif_w =  bifcurve[:,1]
+
+# erasing spurious points
+bif_S = bif_s[0.01<bif_s]
+bif_W = bif_w[0.01<bif_s]
+
 mys=np.linspace(0,2.0,100)
 myw=np.linspace(0,2.0,100)
 
@@ -232,13 +239,13 @@ for i in range(norbits*nperiod):
 	axbif_low.plot(the_allFFTheo[0][i],the_allRecurrentTheo[0][i],color='r',alpha=0.7,lw=7)
 
 
-upperBsequences=np.array([1+mywi*(1+0.)/net.n for j in range(0,len(bifcurve[:,1]))])
-axbif_low.plot(bifcurve[:,0],bifcurve[:,1],'k')
+upperBsequences=np.array([1+mywi*(1+0.)/net.n for j in range(0,len(bif_W))])
+axbif_low.plot(bif_S,bif_W,'k')
 axbif_low.plot(mys,np.array([1+(mywi+0.)/net.n for i in range(0,100)]),c='k',lw=1)
-axbif_low.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
-axbif_low.fill_between(np.linspace(bifcurve[0,0],2,100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
-axbif_low.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
-axbif_low.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
+axbif_low.fill_between(bif_S,bif_W,upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
+axbif_low.fill_between(np.linspace(bif_S[0],2,100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
+axbif_low.fill_between(bif_S,np.zeros(len(bif_S)),bif_W,alpha=0.5, facecolor='darkgrey',linewidth=0)
+axbif_low.fill_between(np.linspace(0,bif_S[-1],100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
 
 
 colormap = plt.cm.winter 
@@ -281,7 +288,14 @@ axbif_low.set_title('(A)',fontsize=stitle,x=xpostitle,y=ypostitle)
 # that depends on the stimulation parameters T and delta -> period,delta
 
 mywi=2. # value wi
-bifcurve=np.load('mybifcurve.npy')
+bifcurve=np.load('mybifcurve2.npy')
+bif_s =  bifcurve[:,0]
+bif_w =  bifcurve[:,1]
+
+# erasing spurious points
+bif_S = bif_s[0.01<bif_s]
+bif_W = bif_w[0.01<bif_s]
+
 mys=np.linspace(0,2.0,100)
 myw=np.linspace(0,2.0,100)
 
@@ -305,13 +319,13 @@ for i in range(norbits*nperiod):
 	axbif_high.plot(the_allFFTheo[1][i],the_allRecurrentTheo[1][i],color='r',alpha=0.7,lw=7)
 
 
-upperBsequences=np.array([1+mywi*(1+0.)/net.n for j in range(0,len(bifcurve[:,1]))])
-axbif_high.plot(bifcurve[:,0],bifcurve[:,1],'k')
+upperBsequences=np.array([1+mywi*(1+0.)/net.n for j in range(0,len(bif_W))])
+axbif_high.plot(bif_S,bif_W,'k')
 axbif_high.plot(mys,np.array([1+(mywi+0.)/net.n for i in range(0,100)]),c='k',lw=1)
-axbif_high.fill_between(bifcurve[:,0],bifcurve[:,1],upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
-axbif_high.fill_between(np.linspace(bifcurve[0,0],2,100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
-axbif_high.fill_between(bifcurve[:,0],np.zeros(len(bifcurve[:,1])),bifcurve[:,1],alpha=0.5, facecolor='darkgrey',linewidth=0)
-axbif_high.fill_between(np.linspace(0,bifcurve[-1,0],100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
+axbif_high.fill_between(bif_S,bif_W,upperBsequences,alpha=0.5,edgecolor='k', facecolor='red',linewidth=0)
+axbif_high.fill_between(np.linspace(bif_S[0],2,100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='red', facecolor='red',linewidth=0)
+axbif_high.fill_between(bif_S,np.zeros(len(bif_W)),bif_W,alpha=0.5, facecolor='darkgrey',linewidth=0)
+axbif_high.fill_between(np.linspace(0,bif_S[-1],100),np.zeros(100),(1.+(mywi+0.)/net.n)*np.ones(100),alpha=0.5,edgecolor='k', facecolor='darkgrey',linewidth=0)
 
 
 colormap = plt.cm.winter 
