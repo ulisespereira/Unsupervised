@@ -8,6 +8,7 @@ from myintegrator import *
 import cProfile
 import json
 import scipy.integrate as integrate
+from functions import *
 
 # this is the transfer function 
 def phi(x,theta,uc):
@@ -85,7 +86,7 @@ tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=100.
-times=1
+times=20
 amp=1.5
 
 
@@ -129,7 +130,7 @@ def myu(t,T,tstart):
 		print 'holi',ttilda
 
 
-def recurrentTheo(t,T,tstart):
+def recurrentTheo(t,T,tstart,w0):
 	if tstart+delay+tau_u0_theta(T)<=t and t<=tstart+T+tau_umax_theta(T):
 		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart))*np.exp((x-delay-tstart-tau_u0_theta(T))/tau_learning) 
 		myintegral=lambda y:integrate.quad(df,tstart+delay+tau_u0_theta(T),y)
@@ -145,7 +146,7 @@ def recurrentTheo(t,T,tstart):
 	else:
 		return w0
 
-def feedforwardTheo(t,T,delta,tstart):
+def feedforwardTheo(t,T,delta,tstart,w0):
 	if tstart+tau_u0_theta(T)<=t and t<=tstart+delay-delta+tau_umax_theta(T):
 		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart-delta-T))*np.exp((x-tau_u0_theta(T)-tstart)/tau_learning) 
 		myintegral=lambda y:integrate.quad(df,tau_u0_theta(T)+tstart,y)
@@ -190,17 +191,48 @@ mystim.inten=amp-amp_dc
 mystim.amp_dc=amp_dc
 #integrator
 
-#tmax=times*(lagStim+n*(period+delta))+mystim.delay_begin
-tmax=300.
-tstart1=mystim.delay_begin+period+delta
-tstart2=mystim.delay_begin+2*period+2*delta
+
+#tmax
+tmax = times * (lagStim+n*(period+delta)) +mystim.delay_begin
 theintegrator=myintegrator(delay,dt,n,tmax)
 theintegrator.fast=False
 adapt,u,connectivity,W01,myH,t=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
-theo_u1=np.array([myu(myt,period,tstart1) for myt in t])
-theo_u2=np.array([myu(myt,period,tstart2) for myt in t])
-theo_w=np.array([recurrentTheo(myt,period,tstart1) for myt in t])
-theo_s=np.array([feedforwardTheo(myt,period,delta,tstart2) for myt in t])
+
+#tmax=times*(lagStim+n*(period+delta))+mystim.delay_begin
+# starting stimulation
+tstart1=mystim.delay_begin+period+delta
+tstart2=mystim.delay_begin+2*period+2*delta
+
+num_stim  = 5
+#ending stimulation
+tstart1_a= 1 * (period+delta) + (num_stim - 1) * (lagStim+n*(period+delta)) +mystim.delay_begin
+tstart2_a= 2 * (period+delta) + (num_stim - 1) * (lagStim+n*(period+delta)) +mystim.delay_begin
+
+# current and weights from theory
+t_first = np.arange(0,300,dt) 
+theo_u1=np.array([myu(myt,period,tstart1) for myt in t_first])
+theo_u2=np.array([myu(myt,period,tstart2) for myt in t_first])
+
+theo_w=np.array([recurrentTheo(myt,period,tstart1,w0) for myt in t_first])
+theo_s=np.array([feedforwardTheo(myt,period,delta,tstart2,w0) for myt in t_first])
+
+t_last = np.arange(tstart1_a - 100,tstart1_a+ 300,dt)
+theo_u1_a=np.array([myu(myt,period,tstart1_a) for myt in t_last])
+theo_u2_a=np.array([myu(myt,period,tstart2_a) for myt in t_last])
+
+
+w0_a = w0
+s0_a = w0
+for k in range(num_stim):
+	tstart_loop= 1 * (period+delta) + (k - 1) * (lagStim+n*(period+delta)) +mystim.delay_begin
+	t_loop = np.arange(tstart_loop - 100,tstart_loop + 300,dt)
+	w0_a=np.array([recurrentTheo(myt,period,tstart1,w0_a) for myt in t_loop])[-1]
+	s0_a=np.array([feedforwardTheo(myt,period,delta,tstart2,s0_a) for myt in t_loop])[-1]
+	print k
+	print 'w0_a =',w0_a,'s0_a',s0_a
+
+theo_w_a=np.array([recurrentTheo(myt,period,tstart1_a,w0_a) for myt in t_last])
+theo_s_a=np.array([feedforwardTheo(myt,period,delta,tstart2_a,s0_a) for myt in t_last])
 # figrue 1
 
 
@@ -208,44 +240,71 @@ rc={'axes.labelsize': 50, 'font.size': 40, 'legend.fontsize': 25, 'axes.titlesiz
 plt.rcParams.update(**rc)
 
 mylw=6
-figure=plt.figure(figsize=(25,10))
-plt.subplots_adjust(wspace=0.25)
-recurrentFig1=figure.add_subplot(121)
-recurrentFig1.plot(t,u[:,1],'k',lw=mylw,alpha = 0.5)
-recurrentFig1.plot(t,u[:,2],'k',lw=mylw,alpha = 0.5)
-#recurrentFig1.plot(t,thres*np.ones(len(u[:,1])),'r',lw=3)
-recurrentFig1.plot(t,theo_u1,'r:',lw=6,alpha=0.6)
-recurrentFig1.plot(t,theo_u2,'r:',lw=6,alpha=0.6)
-recurrentFig1.set_xlabel('Time (ms)',size=40)
-recurrentFig1.set_ylabel(r'$u$',size=70)
-recurrentFig1.set_xticks([100,150,200])
-recurrentFig1.set_yticks([1.,2,3.,4,5.])
-recurrentFig1.set_ylim([0,5])
-recurrentFig1.set_xlim([90,210])
-recurrentFig1.set_title('(A)',size=60,y=1.04)
-#recurrentFig1.axhline(y=thres,xmin=0,xmax=500,linewidth=8,color='gray',linestyle=':',alpha=0.8)
+figure=plt.figure(figsize=(25,20))
+plt.subplots_adjust(wspace=0.15)
+plt.subplots_adjust(hspace=0.1)
 
 
-recurrentFig2=figure.add_subplot(122)
-recurrentFig2.plot(t,connectivity[:,1,1],'c',lw=mylw)
-recurrentFig2.plot(t,theo_w,'r:',lw=6,alpha=0.8)
-recurrentFig2.set_ylabel('Synaptic Weight',size=40)
-recurrentFig2.set_xlabel('Time (ms)',size=40)
-recurrentFig2.set_xticks([100,150,200])
-recurrentFig2.set_yticks([0.1,0.2,0.3,0.4])
-recurrentFig2.set_ylim([0.05,0.4])
-recurrentFig2.set_xlim([100,200])
-recurrentFig2.set_title('(B)',size=60,y=1.04)
+fig1=figure.add_subplot(221)
+fig1.plot(t,u[:,1],'k',lw=mylw,alpha = 0.5)
+fig1.plot(t,u[:,2],'k',lw=mylw,alpha = 0.5)
+#fig1.plot(t,thres*np.ones(len(u[:,1])),'r',lw=3)
+fig1.plot(t_first,theo_u1,'r:',lw=6,alpha=0.6)
+fig1.plot(t_first,theo_u2,'r:',lw=6,alpha=0.6)
+#fig1.set_xlabel('Time (ms)',size=40)
+fig1.set_ylabel(r'$u$',size=70)
+fig1.set_xticks([])
+fig1.set_yticks([1.,2,3.,4,5.])
+fig1.set_ylim([0,5])
+fig1.set_xlim([80,250])
+fig1.set_title('(A)',size=60,y=1.04)
+#fig1.axhline(y=thres,xmin=0,xmax=500,linewidth=8,color='gray',linestyle=':',alpha=0.8)
 
-#recurrentFig3=figure.add_subplot(133)
-recurrentFig2.plot(t,connectivity[:,2,1],'y',lw=mylw)
-recurrentFig2.plot(t,theo_s,'r:',lw=6,alpha=0.8)
-#recurrentFig3.set_ylabel('Synaptic Weight',size=28)
-#recurrentFig3.set_xlabel('Time (ms)',size=28)
-#recurrentFig3.set_xticks([140,160,180,200])
-#recurrentFig3.set_yticks([0.1,0.12,0.14,0.16])
-#recurrentFig3.set_ylim([.1,0.16])
-#recurrentFig3.set_xlim([140,200])
+fig2=figure.add_subplot(222)
+fig2.plot(t,u[:,1],'k',lw=mylw,alpha = 0.5)
+fig2.plot(t,u[:,2],'k',lw=mylw,alpha = 0.5)
+#fig2.plot(t,thres*np.ones(len(u[:,1])),'r',lw=3)
+fig2.plot(t_last,theo_u1_a,'r:',lw=6,alpha=0.6)
+fig2.plot(t_last,theo_u2_a,'r:',lw=6,alpha=0.6)
+#fig2.set_xlabel('Time (ms)',size=40)
+#fig2.set_ylabel(r'$u$',size=70)
+fig2.set_xticks([])
+fig2.set_yticks([1.,2,3.,4,5.])
+fig2.set_ylim([0,5])
+#fig2.set_xlim([tstart1_a-10,tstart1_a+100])
+fig2.set_xlim([4310,4480])
+fig2.set_title('(B)',size=60,y=1.04)
+#fig2.set_title('(A)',size=60,y=1.04)
+#fig2.axhline(y=thres,xmin=0,xmax=500,linewidth=8,color='gray',linestyle=':',alpha=0.8)
+
+
+
+fig3=figure.add_subplot(223)
+fig3.plot(t,connectivity[:,1,1],'c',lw=mylw)
+fig3.plot(t_first,theo_w,'r:',lw=6,alpha=0.8)
+fig3.plot(t,connectivity[:,2,1],'y',lw=mylw)
+fig3.plot(t_first,theo_s,'r:',lw=6,alpha=0.8)
+fig3.set_ylabel('Synaptic Weight',size=40)
+fig3.set_xlabel('Time (ms)',size=40)
+fig3.set_xticks([100,150,200])
+fig3.set_yticks([0,0.2,0.4,0.6])
+fig3.set_ylim([0.0,0.65])
+fig3.set_xlim([80,250])
+
+fig4=figure.add_subplot(224)
+fig4.plot(t,connectivity[:,1,1],'c',lw=mylw)
+fig4.plot(t_last,theo_w_a,'r:',lw=6,alpha=0.8)
+fig4.plot(t,connectivity[:,2,1],'y',lw=mylw)
+fig4.plot(t_last,theo_s_a,'r:',lw=6,alpha=0.8)
+#fig4.set_ylabel('Synaptic Weight',size=40)
+fig4.set_xlabel('Time (ms)',size=40)
+#fig4.set_xticks([100,150,200])
+#fig4.set_xlim([tstart1_a-10,tstart1_a+100])
+fig4.set_xlim([4310,4480])
+fig4.set_xticks([4350,4400,4450])
+fig4.set_yticks([0.4,0.6,0.8,1.])
+fig4.set_ylim([0.4,1.05])
+
 
 #plt.suptitle(r'$I_{DC}=$'+str(amp_dc))
 plt.savefig('fig9.pdf', bbox_inches='tight')
