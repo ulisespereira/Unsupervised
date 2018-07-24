@@ -1,4 +1,4 @@
-# PereiraBrunel2016
+#Unsupervised learning of persistent and seqquential activity' by U. Pereira and N. Brunel.
 This code is for  reproducing  the figures on the paper: 
-'Unsupervised Learning of Persistent Activity and Neural Sequences' by U. Pereira and N. Brunel.
+'Unsupervised Learning of Persistent and Sequential Activity' by U. Pereira and N. Brunel.
 
