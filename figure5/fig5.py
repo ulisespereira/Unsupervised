@@ -40,8 +40,11 @@ def winf(x_hist):
 def tauWinv(x_hist):
 	pre_u=phi(x_hist[0],theta,uc)
 	post_u=phi(x_hist[-1],theta,uc)
-	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
-	return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
+
+	tau_inv =   np.add.outer(1/mytau(post_u),1/mytau(pre_u))
+	tau_inv[tau_inv == 2. / tau_learning] = 1./tau_learning
+	return tau_inv
+	#return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
 
 
 def field(t,x_hist,W):
@@ -109,14 +112,13 @@ plt.rcParams.update(**rc)
 plt.rcParams['image.cmap'] = 'jet'
 
 
-
 #-------------------------------------------------------------
 #-------------------stimulation instability-------------------
 #------------------------------------------------------------
 amp=1.3
 delta=10.
 period=19.
-times=40
+times=100
 mystim=stimulus(patterns,lagStim,delta,period,times)
 mystim.inten=amp-amp_dc
 mystim.amp_dc=amp_dc
@@ -148,8 +150,8 @@ ax5 = plt.subplot(gs[1,1])
 ax6 = plt.subplot(gs[1,2])
 ## Dynamics 
 mystim.inten=.1
-colormap = plt.cm.Accent
-ax4.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+colormap = plt.cm.tab20
+ax4.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 ax4.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
 ax4.plot(t,elstim,'k',lw=3)
@@ -167,14 +169,14 @@ ax4.set_ylabel('Rate')
 
 print 'stimulation1.pdf is stored'
 
-colormap = plt.cm.Accent
-ax5.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax5.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 ax5.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
 ax5.plot(t,elstim,'k',lw=3)
 ax5.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 ax5.set_ylim([0,1.2])
-time_plot=14*(lagStim+n*(period+delta))
+time_plot=52 * (lagStim+n*(period+delta))
+print 'time plot 2',time_plot
 ax5.set_xlim([time_plot,time_plot+400])
 ax5.set_xticks([time_plot,(time_plot+200),(time_plot+400)])
 ax5.set_xticklabels([time_plot*1e-3,(time_plot+200)*1e-3,(time_plot+400)*1e-3])
@@ -188,14 +190,14 @@ ax5.set_title('(D)',y=1.04)
 #plt.close()
 print 'stimulation2.pdf is stored'
 
-colormap = plt.cm.Accent
-ax6.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax6.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 ax6.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
 ax6.plot(t,elstim,'k',lw=3)
 ax6.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
 ax6.set_ylim([0,1.2])
-time_plot=18*(lagStim+n*(period+delta))
+time_plot=70*(lagStim+n*(period+delta))
+print 'time plot 3',time_plot
 ax6.set_xlim([time_plot,time_plot+400])
 ax6.set_ylim([0,1.2])
 ax6.set_xticks([time_plot,(time_plot+200),(time_plot+400)])
@@ -209,16 +211,15 @@ ax6.set_xlabel('Time (s)')
 
 print 'stimulation3.pdf is stored'
 
-colormap = plt.cm.Accent
-ax1.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax1.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 ax1.plot(t,phi(u[:,:],theta,uc),lw=3)
 elstim=np.array([sum(mystim.stim(x)) for x in t])
 ax1.plot(t,elstim,'k',lw=3)
 ax1.fill_between(t,np.zeros(len(t)),elstim,alpha=0.5,edgecolor='k', facecolor='darkgrey')
-ax1.set_xlim([4000,8000])
+ax1.set_xlim([23000,27000])
 ax1.set_yticks([0.5,1])
-ax1.set_xticks([4000,6000,8000])
-ax1.set_xticklabels(['4','6','8'])
+ax1.set_xticks([23000,25000,27000])
+ax1.set_xticklabels(['23','25','27'])
 ax1.set_ylim([0,1.2])
 ax1.set_xlabel('Time (s)')
 ax1.set_ylabel('Rate')
@@ -240,38 +241,41 @@ for i in range(9):
 		ax2.plot(t,connectivity[:,i,i+1],'r',lw=3)
 for i in range(8):
 		ax2.plot(t,connectivity[:,i,i+2],'b',lw=3)
-ax2.set_xlim([0,10000])
-ax2.set_xticks([0,5000,10000])
-ax2.set_xticklabels(['0','5','10'])
+ax2.set_xlim([0,35000])
+ax2.set_xticks([0,10000,20000,30000])
+ax2.set_xticklabels(['0','10','20','30'])
 ax2.set_yticks([0,1.,2.,3.])
 ax2.set_xlabel('Time (s)')
 ax2.set_ylabel('Synaptic Weights')
 ax2.set_title('(B)',y=1.04)
 
+t_mat = tmax/3.
+
 ax3a.matshow(connectivity[0,:,:],vmin=0,vmax=2.5)
 ax3a.set_title('(C)',y=1.08,x=1.06)
 ax3a.set_xticks([])
 ax3a.set_yticks([])
-ax3b.matshow(connectivity[int(3000./dt),:,:],vmin=0,vmax=1.2)
+#ax3b.matshow(connectivity[int(3000./dt),:,:],vmin=0,vmax=1.2)
+ax3b.matshow(connectivity[int(10000/dt),:,:],vmin=0,vmax=wmax)
 ax3b.set_xticks([])
 ax3b.set_yticks([])
-ax3c.matshow(connectivity[int(6000./dt),:,:],vmin=0,vmax=1.2)
+ax3c.matshow(connectivity[int((20000)/dt),:,:],vmin=0,vmax=wmax)
 ax3c.set_xticks([])
 ax3c.set_yticks([])
-ax3d.matshow(connectivity[int(9000./dt),:,:],vmin=0,vmax=1.2)
+ax3d.matshow(connectivity[int((30000)/dt),:,:],vmin=0,vmax=wmax)
 ax3d.set_xticks([])
 ax3d.set_yticks([])
-sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=1.2))
+sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=wmax))
 # fake up the array of the scalar mappable. Urgh...
 sm._A = []
 cax = fig.add_axes([0.92, 0.56, 0.02, 0.325]) # [left, bottom, width, height] 
-myticks=[0.0,1]
+myticks=[0.0,1,2]
 cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
 cbar.ax.tick_params(labelsize=30) 
 #cbar.set_label(r'Capacity ($\alpha_c$)',size=42)
 #plt.tight_layout()
 #gs0.tight_layout(fig,rect=[0.65,0.56,0.89,0.9],h_pad=0.1,w_pad=0.1) #
-fig.savefig('fig5.pdf', bbox_inches='tight')
+fig.savefig('fig_5.pdf', bbox_inches='tight')
 #plt.show()
 plt.close()
 
