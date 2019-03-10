@@ -42,10 +42,14 @@ def winf(x_hist):
 #x_hist is the 'historic' of the x during the delay period the zero is the oldest and the -1 is the newest
 
 def tauWinv(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
-	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
-	return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
+
+	tau_inv =   np.add.outer(1/mytau(post_u),1/mytau(pre_u))
+	tau_inv[tau_inv == 2. / tau_learning] = 1./tau_learning
+	return tau_inv
+	#return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
+
 
 
 def field(t,x_hist,W):
@@ -163,14 +167,17 @@ learningrule3=figure.add_subplot(133)
 current1=np.linspace(0,1,200)
 current2=np.linspace(0,1,200)
 myplot=learningrule3.contourf(current1,current2,winf([current1,current2])*(1./wmax),10,alpha=0.5,cmap=plt.cm.autumn,origin='lower')
-learningrule3.axvline(x=thres, ymin=(thres-0.3)/0.7, ymax = 1, linewidth=lw,color='darkgrey',ls='dashed')
-learningrule3.axhline(y=thres, xmin=(thres-0.3)/(0.7), xmax = 1, linewidth=lw,color='darkgrey',ls='dashed')
+learningrule3.axvline(x=thres,ymin = 0, ymax=(thres-0.3)/0.7, linewidth=lw,color='darkgrey',ls='dashed')
+learningrule3.axhline(y=thres,xmin=0, xmax=(thres-0.3)/(0.7), linewidth=lw,color='darkgrey',ls='dashed')
 learningrule3.set_xlabel(r'Rate pre ($r_{j}$)')
 learningrule3.set_ylabel(r'Rate post ($r_{i}$)')
 learningrule3.set_ylim([0.3,1.])
 learningrule3.set_xlim([0.3,1.])
 learningrule3.set_xticks([0.4,0.7,1])
 learningrule3.set_yticks([0.4,0.7,1])
+learningrule3.text(.39, .48, r'No', fontsize=35)
+learningrule3.text(.298, .41, r'Plasticity', fontsize=35)
+learningrule3.text(0.65,.41, r'Plasticity', fontsize=35)
 cbar=plt.colorbar(myplot,ticks=[0,0.5,1.])
 cbar.ax.set_ylabel(r'$w_{max}$',fontsize=45)
 learningrule3.set_title('(C)',fontsize=45,y=1.06)
@@ -279,7 +286,7 @@ ax1.text(78, 8.9, r'2$^{nd}$ population', fontsize = 30)
 #ax1.axhline(y = 10 + 40 + mydel,ymin =(8.1-ymin)/(ymax - ymin),ymax = (8.5 - ymin)/(ymax - ymin), ls = '--',color = 'gray')
 ax1.set_title('(A)',y=1.03,fontsize = 60)
 
-amp=1.25
+amp=1.6#1.25
 timesmax=30
 # region 1
 delta=8.
