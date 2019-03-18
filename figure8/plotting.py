@@ -62,7 +62,7 @@ def field(t,a,x_hist,W,H):
 n=10 #n pop
 delay=15.3
 tau=10.   #timescale of populations
-tau_H=2000.#200000.
+tau_H=20000.#200000.
 af=0.1
 bf=0.
 y0=.05*np.ones(n)
@@ -71,15 +71,15 @@ w_inh=w_i/n
 nu=1.
 theta=0.
 uc=1.
-wmax=1.6
+wmax=3.5#1.6
 thres=0.6
 beta=1.6
 tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=400.
-times=235
-amp=3.5
+times=285
+amp=5.5#3.5
 
 
 delta=7.
@@ -161,9 +161,9 @@ axSA= plt.subplot(gs1[0,0])
 axPA= plt.subplot(gs1[0,1])
 
 
-colormap = plt.cm.Accent
+colormap = plt.cm.tab20
 
-ax2B.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax2B.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 ax2B.plot(t,phi(u[:,:],theta,uc),lw=3)
 mystim.inten=.1
 elstim=np.array([sum(mystim.stim(x)) for x in t])
@@ -179,7 +179,7 @@ ax2B.set_ylabel('Rate')
 ax2B.set_title('(B)',x=1.028,y=1.04)
 
 
-ax2C.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+ax2C.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 ax2C.plot(t,phi(u[:,:],theta,uc),lw=3)
 mystim.inten=.1
 elstim=np.array([sum(mystim.stim(x)) for x in t])
@@ -213,9 +213,9 @@ for i in range(8):
 ax1A.set_xticks([])
 ax1A.axvline(x=tmax,ymin=0,ymax=2.,linewidth=2,ls='--',color='gray',alpha=0.7)
 #ax1A.set_xticklabels([0,50,100,150])
-ax1A.set_ylim([0,1.8])
+ax1A.set_ylim([0,2.3])
 ax1A.set_xlim([0,400000])
-ax1A.set_yticks([0,0.5,1.,1.5])
+ax1A.set_yticks([0,1.,2.])
 #ax1A.set_xlabel('Time (s)')
 ax1A.set_ylabel('Synaptic Weights')
 ax1A.set_title('(A)',y=1.04)
@@ -225,8 +225,8 @@ ax1A.set_title('(A)',y=1.04)
 #------------------------------------------------------------------------
 
 
-ax1B.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
-ax1B.plot(t,myH[:],lw=3)
+ax1B.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
+ax1B.plot(t,myH[:],lw=5)
 ax1B.axvline(x=tmax,ymin=0,ymax=2.,linewidth=2,ls='--',color='gray',alpha=0.7)
 ax1B.set_ylim([0,1.2])
 ax1B.set_yticks([0.5,1.])
@@ -249,7 +249,7 @@ ax1B.set_ylabel('H')
 
 
 
-vmax=wmax
+vmax=2.3#wmax
 dataStim=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [0,int((tmax/dt)/3.),int((tmax/dt)*2./3.),int(tmax/dt)] ]
 ax2A1.matshow(dataStim[2], vmin=0, vmax=vmax)
 ax2A1.set_xticks([])
@@ -267,25 +267,25 @@ sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=vma
 # fake up the array of the scalar mappable. Urgh...
 sm._A = []
 cax = fig.add_axes([1., 0.307, 0.02, 0.239]) # [left, bottom, width, height] 
-myticks=[0.0,.5,1.,1.5]
+myticks=[0.0,1.,2,3]
 cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
 cbar.ax.tick_params(labelsize=30) 
 
-axSA.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+axSA.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 axSA.plot(t_ret,phi(u_ret[:,:],theta,uc),lw=5)
 axSA.set_ylim([0,1.2])
-axSA.set_xlim([0,220])
-axSA.set_xticks([0,100,200])
+axSA.set_xlim([0,170])
+axSA.set_xticks([0,50,100,150])
 axSA.set_yticks([0.5,1])
 axSA.set_xlabel('Time (ms)')
 axSA.set_ylabel('Rate')
 axSA.set_title('(D)',x=1.028,y=1.04)
 
-axPA.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 0.9,n)]))
+axPA.set_prop_cycle(plt.cycler('color',[colormap(i) for i in np.linspace(0, 1.,n)]))
 axPA.plot(t_ret_PA,phi(u_ret_PA[:,:],theta,uc),lw=5)
 axPA.set_ylim([0,1.2])
-axPA.set_xlim([0,220])
-axPA.set_xticks([0,100,200])
+axPA.set_xlim([0,170])
+axPA.set_xticks([0,50,100,150])
 axPA.set_yticks([])
 axPA.set_xlabel('Time (ms)')
 #axPA.set_ylabel('Rate')

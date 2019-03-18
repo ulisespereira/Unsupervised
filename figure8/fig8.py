@@ -20,10 +20,19 @@ def phi(x,theta,uc):
 def phi_tanh(x):
 	return 0.5*(1+np.tanh(a1*(x+b1)))
 
-def mytauInv(x): #time scale function synapses
-	myresult=np.zeros(len(x))
-	myresult[x>thres]=1/tau_learning
+#def mytauInv(x): #time scale function synapses
+#	myresult=np.zeros(len(x))
+#	myresult[x>thres]=1/tau_learning
+#	return myresult
+def mytau(x): #time scale function synapses
+	myresult=(1e50)*np.ones(len(x))
+	myresult[x>thres]=tau_learning
+	#print x>thres
+	#print x
+	#myresult=(1e8)*(1.+np.tanh(-50.*(x-thres)))+tau_learning
+	#print myresult
 	return myresult
+
 
 def winf(x_hist):
 	pre_u=phi(x_hist[0],theta,uc)
@@ -37,11 +46,14 @@ def winf(x_hist):
 #x_hist is the 'historic' of the x during the delay period the zero is the oldest and the -1 is the newest
 
 def tauWinv(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
-	n=len(pre_u)
-	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
-	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
+
+	tau_inv =   np.add.outer(1/mytau(post_u),1/mytau(pre_u))
+	tau_inv[tau_inv == 2. / tau_learning] = 1./tau_learning
+	return tau_inv
+	#return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
+
 def F(u):
 	return .5*(1.+np.tanh(af*(u-bf)))
 
@@ -71,15 +83,15 @@ w_inh=w_i/n
 nu=1.
 theta=0.
 uc=1.
-wmax=1.45#1.6#2.2#1.6
+wmax=3.5#HERE 1.45#1.6#2.2#1.6
 thres=0.6
 beta=1.6
 tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=400.
-times=235
-amp=3.5
+times=285#HERE! 235
+amp=5.4#HERE!#3.5
 
 
 delta=7.#30#7.
@@ -143,72 +155,13 @@ theintegrator=myintegrator(delay,dt,n,tmaxdyn)
 theintegrator.fast=False
 adapt_ret,u_ret,connectivity_ret,WLast_ret,myH_ret,t_ret=theintegrator.DDE_Norm_Miller(field,a0,x0,W0,H0)
 
+plt.plot(t_ret,u_ret)
+plt.show()
 #pickle.dump((u_ret,connectivity_ret,myH_ret,t_ret),open('dyn_retrieval_PA.p','wb'))
 pickle.dump((u_ret,connectivity_ret,myH_ret,t_ret),open('dyn_retrieval.p','wb'))
 
 
 
 
-
-
-
-#--------------------------------------------------------------------------------
-#-----------The Connectivity Matrices--------------------------------------------
-#--------------------------------------------------------------------------------
-
-## connectivity matrix during the stimulation
-#data=[connectivity[0,:,:],connectivity[int((tmax/dt)/3.),:,:],connectivity[int(2*(tmax/dt)/3.),:,:],connectivity[int(tmax/dt),:,:]]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-##cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-##fig.colorbar(im, cax=cax)
-#plt.savefig('matrixstimulationH.pdf', bbox_inches='tight')
-#print 'matrixstimulationH.pdf',' is saved'
-##plt.show()
-#plt.close()
-#
-##matrix connectivity and homoestatic variable during stimulation
-#data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [0,int((tmax/dt)/3.),int((tmax/dt)*2./3.),int(tmax/dt)] ]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-##cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-##fig.colorbar(im, cax=cax)
-#plt.savefig('matrixstimulationHhom.pdf', bbox_inches='tight')
-#print 'matrixstimulationHhom.pdf',' is saved'
-##plt.show()
-#plt.close()
-#
-## matrix connectivity after stimulation
-#data=[connectivity[int(tmax/dt),:,:],connectivity[int(tmax/dt+((thetmax-tmax)/dt)/3.),:,:],connectivity[int(tmax/dt+2*((thetmax-tmax)/dt)/3.),:,:],connectivity[-1,:,:]]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-##cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-##fig.colorbar(im, cax=cax)
-#plt.savefig('matrixstimulationHFinal.pdf', bbox_inches='tight')
-#print 'matrixstimulationHFinal.pdf',' is saved'
-##plt.show()
-#plt.close()
-#
-## matrix connectivity and homeostatic after stimulation 
-#data=[np.transpose(np.multiply(np.transpose(connectivity[i,:,:]),myH[i,:])) for i in [int(tmax/dt),int(tmax/dt+((thetmax-tmax)/dt)/3.),int(tmax/dt+((thetmax-tmax)/dt)*2./3.),-1] ]
-#fig, axes = plt.subplots(nrows=2, ncols=2)
-#for dat, ax in zip(data, axes.flat):
-#	    # The vmin and vmax arguments specify the color limit
-#	im = ax.matshow(dat, vmin=0, vmax=vmax)
-#	# Make an axis for the colorbar on the right side
-#cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
-#fig.colorbar(im, cax=cax,ticks=[0,1.,2.])
-#print 'matrixstimulationHhomFinal.pdf',' is saved'
-##plt.show()
-#plt.close()
 
 
