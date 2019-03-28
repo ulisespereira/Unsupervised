@@ -8,6 +8,9 @@ from stimulus import *
 from myintegrator import *
 import cProfile
 import json
+from matplotlib.colors import LogNorm
+from matplotlib.ticker import MultipleLocator
+import cPickle as pickle
 # this is the transfer function 
 def phi(x,theta,uc):
 	myresult=nu*(x-theta)
@@ -17,6 +20,15 @@ def phi(x,theta,uc):
 
 def phi_tanh(x):
 	return 0.5*(1+np.tanh(a1*(x+b1)))
+
+def mytau(x): #time scale function synapses
+	myresult=(1e50)*np.ones(len(x))
+	myresult[x>thres]=tau_learning
+	#print x>thres
+	#print x
+	#myresult=(1e8)*(1.+np.tanh(-50.*(x-thres)))+tau_learning
+	#print myresult
+	return myresult
 
 def mytauInv(x): #time scale function synapses
 	myresult=np.zeros(len(x))
@@ -33,13 +45,16 @@ def winf(x_hist):
 
 #function for the field
 #x_hist is the 'historic' of the x during the delay period the zero is the oldest and the -1 is the newest
-
 def tauWinv(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
-	n=len(pre_u)
-	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
-	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
+
+	tau_inv =   np.add.outer(1/mytau(post_u),1/mytau(pre_u))
+	tau_inv[tau_inv == 2. / tau_learning] = 1./tau_learning
+	return tau_inv
+	#return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
+
+
 def F(u):
 	return .5*(1.+np.tanh(af*(u-bf)))
 
@@ -89,7 +104,7 @@ tau_a=10.
 #parameters stimulation
 dt=0.5
 lagStim=100.
-times=235
+times=80#235
 amp=2.5
 
 
@@ -123,7 +138,7 @@ mystim.inten=amp
 npts=int(np.floor(delay/dt)+1)         # points delay
 tmax=times*(lagStim+n*(period+delta))+100.+mystim.delay_begin
 
-thetmax=tmax+15.5*tau_H
+thetmax=tmax + 20.5 * tau_H
 
 #initial conditions
 a0=np.zeros((npts,n))
@@ -156,28 +171,29 @@ plt.rcParams.update(**rc)
 plt.rcParams['image.cmap'] = 'jet'
 
 for i in range(10):
-		plt.plot(t,connectivity[:,i,i],'c',lw=4)
+		plt.plot(t,connectivity[:,i,i],'c',lw=1)
 for i in range(0,9):
-		plt.plot(t,connectivity[:,i+1,i],'y',lw=4)
+		plt.plot(t,connectivity[:,i+1,i],'y',lw=1)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g',lw=3)
+		plt.plot(t,connectivity[:,i+2,i],'g',lw=1)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r',lw=3)
+		plt.plot(t,connectivity[:,i,i+1],'r',lw=1)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b',lw=3)
+		plt.plot(t,connectivity[:,i,i+2],'b',lw=1)
 
 
 for i in range(10):
-		plt.plot(t,connectivityQ[:,i,i],'b--',lw=4,alpha=0.5)
+		plt.plot(t,connectivityQ[:,i,i],'c',lw=5,alpha=0.05)
 for i in range(0,9):
-		plt.plot(t,connectivityQ[:,i+1,i],'g--',lw=4,alpha=0.5)
+		plt.plot(t,connectivityQ[:,i+1,i],'y',lw=5,alpha=0.05)
 for i in range(8):
-		plt.plot(t,connectivity[:,i+2,i],'g--',lw=3)
+		plt.plot(t,connectivityQ[:,i+2,i],'g',lw=5, alpha = 0.05)
 for i in range(9):
-		plt.plot(t,connectivity[:,i,i+1],'r--',lw=3)
+		plt.plot(t,connectivityQ[:,i,i+1],'r',lw=5, alpha=0.05)
 for i in range(8):
-		plt.plot(t,connectivity[:,i,i+2],'b--',lw=3)
+		plt.plot(t,connectivityQ[:,i,i+2],'b', lw=5, alpha=0.05)
 plt.xlim([0,thetmax])
+#plt.xticks([0,100000,200000],[0,100,200])
 plt.xticks([0,100000,200000],[0,100,200])
 plt.ylim([0,1.8])
 plt.yticks([0.5,1.,1.5])
@@ -186,7 +202,7 @@ plt.ylabel('Synaptic Weights')
 
 plt.savefig('connectivitystimulationH.pdf',transparent=True, bbox_inches='tight')
 plt.xlim([0,tmax])
-plt.xticks([0,20000,40000,60000,80000],[0,20,40,60,80])
+plt.xticks([0,10000,20000],[0,10,20])
 plt.ylim([0,1.8])
 plt.yticks([0.5,1.,1.5])
 plt.xlabel('Time (s)')
@@ -198,31 +214,92 @@ plt.close()
 #-------------Homeostatic Variable --------------------------------------
 #------------------------------------------------------------------------
 
-
-colormap = plt.cm.Accent
-plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9,n)])
-plt.plot(t,myH[:],lw=4)
-plt.plot(tQ,myHQ[:],'--',lw=4)
-plt.ylim([0,5.])
-plt.yticks([1,2,3,4,5])
-plt.xlim([0,thetmax])
-plt.xticks([0,100000,200000],[0,100,200])
-plt.xlabel('Time (s)')
-plt.ylabel('H')
-i#plt.show()
+fig = plt.figure(figsize=(7, 6))
+ax1 = fig.add_subplot(111)
+colormap = plt.cm.tab20
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 1.,n)])
+ax1.semilogy(t,myH[:],lw=5)
+ax1.semilogy(tQ,myHQ[:],'--',lw=5)
+#plt.ylim([0,5.])
+#plt.yticks([1,2,3,4,5])
+ax1.set_xlim([0,thetmax])
+#ax1.set_xticks([0,100000,200000],[0,100,200])
+ax1.set_xticks([0,100000,200000])
+ax1.set_xticklabels([0,100,200])
+ax1.set_xlabel('Time (s)')
+ax1.set_ylabel('H')
 plt.savefig('HdynamicsLearning.pdf',transparent=True, bbox_inches='tight')
-plt.ylim([0,1.2])
-plt.yticks([0.5,1])
-plt.xlim([0,tmax])
-plt.xticks([0,20000,40000,60000,80000],[0,20,40,60,80])
-plt.xlabel('Time (s)')
-plt.ylabel('H')
+plt.close()
+
+
+fig = plt.figure(figsize=(7, 6))
+ax2 = fig.add_subplot(111)
+plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 1.,n)])
+ax2.plot(t,myH[:],lw=5)
+ax2.plot(tQ,myHQ[:],'--',lw=5)
+#ax2.set_ylim([0,1.2])
+ax2.set_ylim([0,.1])
+ax2.set_yticks([0.1])
+ax2.set_xlim([0,tmax])
+#ax2.set_xticks([0,20000,40000,60000,80000],[0,20,40,60,80])
+ax2.set_xticks([0,10000,20000])
+ax2.set_xticklabels([0,10,20])
+ax2.set_xlabel('Time (s)')
+ax2.set_ylabel('H')
 plt.savefig('HdynamicsLearningzoom.pdf',transparent=True, bbox_inches='tight')
 #plt.show()
 plt.close()
 
 
 print 'HdynamicsLearningzoom.pdf',' is saved'
+
+#------------Synaptic Weights------------------------------------------
+#----------------------------------------------------------------------
+
+rc={'axes.labelsize': 32, 'font.size': 30, 'legend.fontsize': 25, 'axes.titlesize': 30}
+plt.rcParams.update(**rc)
+plt.rcParams['image.cmap'] = 'jet'
+connectivityM_l = np.array([np.transpose(np.multiply(np.transpose(connectivity[l,:,:]),myH[l,:])) for l in range(len(t))])
+connectivityM_Q = np.array([np.transpose(np.multiply(np.transpose(connectivityQ[l,:,:]),myHQ[l,:])) for l in range(len(t))])
+
+for i in range(10):
+		plt.semilogy(t,connectivityM_l[:,i,i],'c',lw=1)
+for i in range(0,9):
+		plt.semilogy(t,connectivityM_l[:,i+1,i],'y',lw=1)
+for i in range(8):
+		plt.semilogy(t,connectivityM_l[:,i+2,i],'g',lw=1)
+for i in range(9):
+		plt.semilogy(t,connectivityM_l[:,i,i+1],'r',lw=1)
+for i in range(8):
+		plt.semilogy(t,connectivityM_l[:,i,i+2],'b',lw=1)
+
+
+for i in range(10):
+		plt.semilogy(t,connectivityM_Q[:,i,i],'c',lw=5,alpha=0.05)
+for i in range(0,9):
+		plt.semilogy(t,connectivityM_Q[:,i+1,i],'y',lw=5,alpha=0.05)
+for i in range(8):
+		plt.semilogy(t,connectivityM_Q[:,i+2,i],'g',lw=5, alpha = 0.05)
+for i in range(9):
+		plt.semilogy(t,connectivityM_Q[:,i,i+1],'r',lw=5, alpha=0.05)
+for i in range(8):
+		plt.semilogy(t,connectivityM_Q[:,i,i+2],'b', lw=5, alpha=0.05)
+plt.xlim([0,thetmax])
+#plt.xticks([0,100000,200000],[0,100,200])
+plt.xticks([0,100000,200000],[0,100,200])
+#plt.ylim([0,1.8])
+#plt.yticks([0.5,1.,1.5])
+plt.xlabel('Time (s)')
+plt.ylabel('Synaptic Weights')
+plt.savefig('connectivitystimulationWH.pdf',transparent=True, bbox_inches='tight')
+plt.xlim([0,tmax])
+plt.xticks([0,10000,20000],[0,10,20])
+plt.ylim([0,1.8])
+plt.yticks([0.5,1.,1.5])
+plt.xlabel('Time (s)')
+plt.ylabel('Synaptic Weights')
+plt.savefig('connectivitystimulationWHzoom.pdf', transparent=True,bbox_inches='tight')
+plt.close()
 
 #--------------------------------------------------------------------------
 #-------------Printing Connectivity Matrices-------------------------------
@@ -246,19 +323,21 @@ ax3d = plt.subplot(gs0[1,1])
 
 vmax=wmax
 #titles=['Linear'+r' $\matbb{W}$','Linear'+r' $\matbf{W}$','Modified'+r' $\matbb{W}$','Modified'+r' $\matbf{W}$']
-ax3a.matshow(linearWsep, vmin=0, vmax=vmax)
+plt3a = ax3a.matshow(linearWsep, vmin=0, vmax = vmax)
 ax3a.set_xticks([])
 ax3a.set_yticks([])
 
-ax3b.matshow(linearW, vmin=0, vmax=vmax)
+
+
+plt3b = ax3b.matshow(linearW, vmin=0,vmax=vmax)
 ax3b.set_xticks([])
 ax3b.set_yticks([])
-
-ax3c.matshow(QWsep, vmin=0, vmax=vmax)
+#
+plt3c  = ax3c.matshow(QWsep, vmin=0, vmax=vmax)
 ax3c.set_xticks([])
 ax3c.set_yticks([])
 
-ax3d.matshow(QW, vmin=0, vmax=vmax)
+plt3d = ax3d.matshow(QW, vmin=0, vmax=vmax)
 ax3d.set_xticks([])
 ax3d.set_yticks([])
 
@@ -266,10 +345,10 @@ sm = plt.cm.ScalarMappable(cmap=plt.cm.jet, norm=plt.Normalize(vmin=0., vmax=vma
 # fake up the array of the scalar mappable. Urgh...
 sm._A = []
 cax = fig.add_axes([0.95, 0.11, 0.05, 0.77]) # [left, bottom, width, height] 
+
 myticks=[0.,vmax/2.,vmax]
 cbar=fig.colorbar(sm, cax=cax,ticks=myticks,alpha=1.)
 cbar.ax.tick_params(labelsize=45.) 
-
 plt.savefig('QW.pdf', bbox_inches='tight')
 plt.close()
 
