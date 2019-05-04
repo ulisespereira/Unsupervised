@@ -41,11 +41,14 @@ def winf(x_hist):
 #x_hist is the 'historic' of the x during the delay period the zero is the oldest and the -1 is the newest
 
 def tauWinv(x_hist):
-	pre_u=x_hist[0]
-	post_u=x_hist[-1]
-	n=len(pre_u)
-	#return  np.add.outer(1/mytau(post_u),1/mytau(pre_u))
-	return  tau_learning*np.outer(mytauInv(post_u),mytauInv(pre_u))
+	pre_u=phi(x_hist[0],theta,uc)
+	post_u=phi(x_hist[-1],theta,uc)
+
+	tau_inv =   np.add.outer(mytauInv(post_u),mytauInv(pre_u))
+	tau_inv[tau_inv == 2. / tau_learning] = 1./tau_learning
+	return tau_inv
+	#return tau_learning*np.outer(1./mytau(post_u),1./mytau(pre_u))
+
 def F(u):
 	if theta<=u and u<=uc:
 		r=nu*(u-theta)
@@ -131,34 +134,37 @@ def myu(t,T,tstart):
 
 
 def recurrentTheo(t,T,tstart,w0):
-	if tstart+delay+tau_u0_theta(T)<=t and t<=tstart+T+tau_umax_theta(T):
-		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart))*np.exp((x-delay-tstart-tau_u0_theta(T))/tau_learning) 
-		myintegral=lambda y:integrate.quad(df,tstart+delay+tau_u0_theta(T),y)
+	t0 = tstart + tau_u0_theta(T)
+	t1 = tstart + T +tau_umax_theta(T) + delay
+	if t0<=t and t<=t1:
+		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart))*np.exp((x-t0)/tau_learning) 
+		myintegral=lambda y:integrate.quad(df, t0, y)
 		val,err=myintegral(t)
-		return np.exp(-(t-(delay+tau_u0_theta(T)+tstart))/tau_learning)*(w0+val*(1./tau_learning))
+		return np.exp(-(t-t0)/tau_learning)*(w0+val*(1./tau_learning))
 	
-	elif t>tstart+T+tau_umax_theta(T):
-		myt=tstart+T+tau_umax_theta(T)
-		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart))*np.exp((x-delay-tstart-tau_u0_theta(T))/tau_learning) 
-		myintegral=lambda y:integrate.quad(df,tstart+delay+tau_u0_theta(T),y)
-		val,err=myintegral(myt)
-		return np.exp(-(myt-(delay+tau_u0_theta(T)+tstart))/tau_learning)*(w0+val*(1./tau_learning))
+	elif t>t1:
+		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart))*np.exp((x-t0)/tau_learning) 
+		myintegral=lambda y:integrate.quad(df, t0, y)
+		val,err=myintegral(t1)
+		return np.exp(-(t1-t0)/tau_learning)*(w0+val*(1./tau_learning))
+	
 	else:
 		return w0
 
 def feedforwardTheo(t,T,delta,tstart,w0):
-	if tstart+tau_u0_theta(T)<=t and t<=tstart+delay-delta+tau_umax_theta(T):
-		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart-delta-T))*np.exp((x-tau_u0_theta(T)-tstart)/tau_learning) 
-		myintegral=lambda y:integrate.quad(df,tau_u0_theta(T)+tstart,y)
+	t0 = tstart + tau_u0_theta(T) + delay
+	t1 = tstart + delta + 2 * T + tau_umax_theta(T)# old
+	if t0<=t and t<=t1:
+		df=lambda x:F(myu(x,T,tstart+T+delta))  * F(myu(x-delay,T,tstart))*np.exp((x-t0)/tau_learning) 
+		myintegral=lambda y:integrate.quad(df,t0,y)
 		val,err=myintegral(t)
-		return np.exp(-(t-(tstart+tau_u0_theta(T)))/tau_learning)*(w0+val*(1./tau_learning))
+		return np.exp(-(t-t0)/tau_learning) * (w0 + val * (1./tau_learning))
 	
-	elif t>tstart+delay-delta+tau_umax_theta(T):
-		myt=tstart+delay-delta+tau_umax_theta(T)
-		df=lambda x:F(myu(x,T,tstart))*F(myu(x-delay,T,tstart-delta-T))*np.exp((x-tau_u0_theta(T)-tstart)/tau_learning) 
-		myintegral=lambda y:integrate.quad(df,tau_u0_theta(T)+tstart,y)
-		val,err=myintegral(myt)
-		return np.exp(-(myt-(tstart+tau_u0_theta(T)))/tau_learning)*(w0+val*(1./tau_learning))
+	elif t>t1:
+		df=lambda x:F(myu(x,T,tstart+T+delta))*F(myu(x-delay,T,tstart))*np.exp((x-t0)/tau_learning) 
+		myintegral = lambda y:integrate.quad(df,t0,y)
+		val,err = myintegral(t1)
+		return np.exp(-(t1-t0)/tau_learning) * (w0 + val * (1./tau_learning))
 	else:
 		return w0
 
@@ -214,7 +220,7 @@ theo_u1=np.array([myu(myt,period,tstart1) for myt in t_first])
 theo_u2=np.array([myu(myt,period,tstart2) for myt in t_first])
 
 theo_w=np.array([recurrentTheo(myt,period,tstart1,w0) for myt in t_first])
-theo_s=np.array([feedforwardTheo(myt,period,delta,tstart2,w0) for myt in t_first])
+theo_s=np.array([feedforwardTheo(myt,period,delta,tstart1,w0) for myt in t_first])
 
 t_last = np.arange(tstart1_a - 100,tstart1_a+ 300,dt)
 theo_u1_a=np.array([myu(myt,period,tstart1_a) for myt in t_last])
@@ -227,12 +233,12 @@ for k in range(num_stim):
 	tstart_loop= 1 * (period+delta) + (k - 1) * (lagStim+n*(period+delta)) +mystim.delay_begin
 	t_loop = np.arange(tstart_loop - 100,tstart_loop + 300,dt)
 	w0_a=np.array([recurrentTheo(myt,period,tstart1,w0_a) for myt in t_loop])[-1]
-	s0_a=np.array([feedforwardTheo(myt,period,delta,tstart2,s0_a) for myt in t_loop])[-1]
+	s0_a=np.array([feedforwardTheo(myt,period,delta,tstart1,s0_a) for myt in t_loop])[-1]
 	print k
 	print 'w0_a =',w0_a,'s0_a',s0_a
 
 theo_w_a=np.array([recurrentTheo(myt,period,tstart1_a,w0_a) for myt in t_last])
-theo_s_a=np.array([feedforwardTheo(myt,period,delta,tstart2_a,s0_a) for myt in t_last])
+theo_s_a=np.array([feedforwardTheo(myt,period,delta,tstart1_a,s0_a) for myt in t_last])
 # figrue 1
 
 
@@ -303,7 +309,7 @@ fig4.set_xlabel('Time (ms)',size=40)
 fig4.set_xlim([4310,4480])
 fig4.set_xticks([4350,4400,4450])
 fig4.set_yticks([0.4,0.6,0.8,1.])
-fig4.set_ylim([0.4,1.05])
+fig4.set_ylim([0.3,1.05])
 
 
 #plt.suptitle(r'$I_{DC}=$'+str(amp_dc))
