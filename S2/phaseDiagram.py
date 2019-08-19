@@ -50,10 +50,10 @@ plt.rcParams.update(**rc)
 
 
 ustar=np.arctanh(2*y0-1)/a1-b1
-plt.axvline(ustar, color='red',lw=3)
+plt.axvline(ustar, color='red',lw=4)
 
 w=0.5
-plt.plot(u_null,nullcline_u(u_null),color='g',lw=3,label=r'$w=0.5$')
+plt.plot(u_null,nullcline_u(u_null),color='g',lw=4,label=r'$w=0.5$')
 Hstar_0_5=nullcline_u(ustar)
 plt.plot(ustar,Hstar_0_5,'og',markersize=12,alpha=0.9)
 myh0=np.linspace(Hstar_0_5*0.9,Hstar_0_5*0.9,1)
@@ -63,7 +63,7 @@ for H0 in myh0:
 	sol = odeint(fieldSimpleModel,x0,t)
 	plt.plot(sol[:,0],sol[:,1],':k',alpha=.5,lw=6)
 w=2.2
-plt.plot(u_null,nullcline_u(u_null),color='m',lw=3,label=r'$w=1.2$')
+plt.plot(u_null,nullcline_u(u_null),color='m',lw=4,label=r'$w=2.2$')
 Hstar_1_2=nullcline_u(ustar)
 plt.plot(ustar,Hstar_1_2,'om',markersize=12,alpha=0.9)
 myh0=np.linspace(Hstar_1_2*0.9,Hstar_1_2*0.9,1)
@@ -121,6 +121,7 @@ plt.xticks([0,1,2])
 plt.yticks([0,50,100])
 plt.xlabel(r'$u$')
 plt.ylabel(r'$H$')
+plt.legend(loc='lower right',fontsize=25)
 plt.savefig('SimpleModelAmmended.pdf', bbox_inches='tight',transparent=True)
 plt.xlim([-0.0001,0.005])
 plt.ylim([0,1.2])
