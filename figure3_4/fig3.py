@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import sparse
 from scipy.integrate import odeint
+from scipy.optimize import root
 import matplotlib.pyplot as plt
 import math as mt
 from stimulus import *
@@ -59,7 +60,7 @@ def field(t,x_hist,W):
 
 #script to save the parameters
 
-
+# computing boundary plot
 
 #This are a the parameters of the simulation
 
@@ -121,7 +122,6 @@ plt.rcParams.update(**rc)
 
 
 
-
 #----------------------------------------------------------
 # Transfer function, stationary leanring function and tau
 #-----------------------------------------------------------
@@ -163,10 +163,23 @@ learningrule2.set_title('(B)',fontsize=45,y=1.06)
 
 #figure=plt.figure()
 #learningrule1.legend(loc='upper left')
+#curve f(x)g(y)=0.5 wmax
+current_plot=np.linspace(.68,1,200)
+def fun(x): 
+	return (1/2.)* (1. + np.tanh(a_post*(x-b_post)))
+x0 = 0.8
+f_g_eq_0_5 = []
+for x in current_plot:
+	y = lambda r:fun(r)-.5/fun(x)
+	sol = root(y, x0)
+	f_g_eq_0_5.append(sol.x[0])
+
+
 learningrule3=figure.add_subplot(133)
 current1=np.linspace(0,1,200)
 current2=np.linspace(0,1,200)
 myplot=learningrule3.contourf(current1,current2,winf([current1,current2])*(1./wmax),10,alpha=0.5,cmap=plt.cm.autumn,origin='lower')
+learningrule3.plot(current_plot, f_g_eq_0_5,color = 'g',lw = lw, ls = '--')
 learningrule3.axvline(x=thres,ymin = 0, ymax=(thres-0.3)/0.7, linewidth=lw,color='darkgrey',ls='dashed')
 learningrule3.axhline(y=thres,xmin=0, xmax=(thres-0.3)/(0.7), linewidth=lw,color='darkgrey',ls='dashed')
 learningrule3.set_xlabel(r'Rate pre ($r_{j}$)')
